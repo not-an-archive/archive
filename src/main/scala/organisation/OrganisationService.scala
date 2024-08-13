@@ -1,8 +1,8 @@
-package org
+package organisation
 
 import cats.effect.*
 
-import na.nl.*
+import na.*
 
 object OrganisationService:
 

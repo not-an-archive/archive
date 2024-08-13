@@ -1,4 +1,4 @@
-package na.nl
+package na
 
 import cats.effect._
 import cats.data._

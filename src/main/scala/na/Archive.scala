@@ -1,19 +1,18 @@
-package na.nl
+package na
 
-import cats.effect.*
-import org.flywaydb.core.*
 import scala.concurrent.*
+import cats.effect.*
+import doobie.*
+import doobie.util.log.LogEvent
+import doobie.hikari.HikariTransactor
+import org.flywaydb.core.*
 
-object Database:
+object Archive:
 
-  import doobie.*
-  import doobie.util.log.LogEvent
-  import doobie.hikari.HikariTransactor
-
-  val printSqlLogHandler: LogHandler[IO] =
+  private val printSqlLogHandler: LogHandler[IO] =
     (logEvent: LogEvent) => IO.delay(println(logEvent.sql))
 
-  def transactor(config: DatabaseConfig)(implicit ec: ExecutionContext): Resource[IO, HikariTransactor[IO]] =
+  def transactor(config: DatabaseConfig, ec: ExecutionContext): Resource[IO, HikariTransactor[IO]] =
     HikariTransactor
       .newHikariTransactor[IO](
         driverClassName = config.driver,

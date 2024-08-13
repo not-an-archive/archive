@@ -1,4 +1,4 @@
-package org
+package organisation
 
 import java.util.UUID
 import cats.implicits.*
@@ -7,7 +7,7 @@ import fs2.*
 import doobie.Meta
 import doobie.implicits.*
 import doobie.util.transactor.*
-import na.nl.{Identity, NoIdentityError, NotFoundError, Repository, UpdateError}
+import na.*
 
 object OrganisationRepository:
 
@@ -94,5 +94,5 @@ object OrganisationRepository:
       private def expectUpdate(id: Identity)(rowCount: Int): Result[Unit] =
         expectUpdate(Some(id))(rowCount)
 
-  implicit val uuidMeta: Meta[UUID] =
+  given uuidMeta: Meta[UUID] =
     doobie.h2.implicits.UuidType

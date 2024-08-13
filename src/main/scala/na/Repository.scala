@@ -1,11 +1,11 @@
-package na.nl
+package na
 
-trait StreamingRepository[F[_], A]:
+sealed trait StreamingRepository[F[_], A]:
   import fs2.Stream
   def stream: Stream[F, A]
 
 
-abstract class CrudRepository[F[_], A](name: String):
+abstract class CrudRepository[F[_], A]:
   type Result[A] = Either[RepositoryError, A]
   def create(a: A): F[Result[Unit]]
   def read(id: Identity): F[Result[A]]
@@ -14,7 +14,7 @@ abstract class CrudRepository[F[_], A](name: String):
 
 
 abstract class Repository[F[_], A](val name: String)
-  extends CrudRepository[F, A](name)
+  extends CrudRepository[F, A]
   with StreamingRepository[F, A]
 
 sealed trait RepositoryError

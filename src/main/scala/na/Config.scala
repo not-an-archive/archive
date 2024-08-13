@@ -1,14 +1,14 @@
-package na.nl
+package na
 
 import pureconfig.*
 import pureconfig.error.*
 import pureconfig.generic.derivation.default.*
 import com.comcast.ip4s.*
 
-implicit val hostConfigReader: ConfigReader[Host] =
+given hostConfigReader: ConfigReader[Host] =
   ConfigReader.fromString[Host](ConvertHelpers.optF(Host.fromString))
 
-implicit val portConfigReader: ConfigReader[Port] =
+given portConfigReader: ConfigReader[Port] =
   ConfigReader.intConfigReader.map(_.toString).emap(ConvertHelpers.optF(Port.fromString))
 
 case class ServerConfig(host: Host, port: Port)
@@ -29,8 +29,6 @@ object Config:
   import cats.*
   import cats.implicits.*
   import cats.effect.*
-
-  import com.typesafe.config.ConfigFactory
 
   def load: Resource[IO, Config] =
     val config = IO.delay(ConfigSource.default.load[Config]).flatMap:

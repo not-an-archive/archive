@@ -1,17 +1,16 @@
-package na.nl
+package na
 
-import java.util.UUID
-import cats._
+import cats.*
 
-type Identity = UUID
+type Identity = java.util.UUID
 
 object Identity:
 
   def apply(s: String): Identity =
-    UUID.fromString(s)
+    java.util.UUID.fromString(s)
 
   val generate: () => Identity =
-    () => UUID.randomUUID
+    () => java.util.UUID.randomUUID
 
 
 trait HasIdentity[F[_], A]:

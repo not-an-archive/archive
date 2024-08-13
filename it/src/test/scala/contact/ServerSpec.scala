@@ -5,9 +5,7 @@ import org.scalatest.concurrent.*
 import org.scalatest.matchers.should.*
 import org.scalatest.time.*
 import org.scalatest.flatspec.*
-
 import cats.effect.*
-
 import org.http4s.*
 import org.http4s.circe.*
 import org.http4s.client.dsl.io.*
@@ -16,10 +14,10 @@ import org.http4s.dsl.io.*
 import scala.concurrent.*
 import io.circe.*
 import io.circe.literal.*
+import na.*
+import organisation.*
 
-import na.nl.*
-
-class OrganisationServerSpec
+class ServerSpec
   extends AsyncFlatSpec
   with Checkpoints
   with Matchers
@@ -29,10 +27,10 @@ class OrganisationServerSpec
   import cats.effect.unsafe.implicits.global
 
   val server: IO[ExitCode] =
-    OrganisationServer.create
+    Server.create
 
   var shutdown: () => Future[Unit] =
-    println("Start OrganisationServer..")
+    println("Start Server..")
     server.unsafeRunCancelable()
 
   override implicit val patienceConfig =
@@ -40,13 +38,13 @@ class OrganisationServerSpec
 
   override protected def beforeAll(): Unit =
     eventually(client.use(_.expect[Json](endpoint)).unsafeRunSync())
-    println("OrganisationServer started")
+    println("Server started")
 
   override protected def afterAll(): Unit =
     import scala.concurrent.duration.*
-    println("Stopping OrganisationServer..")
+    println("Stopping Server..")
     Await.result(shutdown(), 10.seconds)
-    println("OrganisationServer stopped.")
+    println("Server stopped.")
 
   lazy val client: Resource[IO, org.http4s.client.Client[IO]] =
     org.http4s.ember.client.EmberClientBuilder.default[IO].build
@@ -60,7 +58,7 @@ class OrganisationServerSpec
   def asyncJsonFrom(request: Request[IO]): Json =
     client.use(_.expect[Json](request)).unsafeRunSync()
 
-  "OrganisationServer" should "create a organisation" in {
+  "Server" should "create a organisation" in {
 
       val name = "create organisation"
       val entity =

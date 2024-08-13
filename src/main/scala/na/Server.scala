@@ -11,7 +11,6 @@ import org.http4s.implicits.*
 
 import organisation.*
 
-
 object Server extends IOApp:
 
   case class Environment(transactor: HikariTransactor[IO], config: Config)

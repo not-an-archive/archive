@@ -14,19 +14,19 @@ DELETE | `/organisations/{id}` | Deletes the `organisation` with the specified i
 
 Here are some examples on how to use the microservice with curl, assuming it runs on the default port 8080:
 
-Create a Organisation:
-```curl -X POST --header "Content-Type: application/json" --data '{"name": "my Organisation", "importance": "high"}' http://localhost:8080/organisations```
+Create an organisation:
+```curl -X POST --header "Content-Type: application/json" --data '{"name": "me.org"}' http://localhost:8080/organisations```
 
-Get all Organisations:
+Get all organisations:
 ```curl http://localhost:8080/organisations```
 
-Get a single Organisation (assuming the id of the Organisation is 1):
+Get a single organisation (assuming the id of the organisation is 1):
 ```curl http://localhost:8080/organisations/1```
 
-Update a Organisation (assuming the id of the Organisation is 1):
-```curl -X PUT --header "Content-Type: application/json" --data '{"name": "my Organisation", "importance": "low"}' http://localhost:8080/organisations/1```
+Update a organisation (assuming the id of the organisation is 1):
+```curl -X PUT --header "Content-Type: application/json" --data '{"name": "me.org"}' http://localhost:8080/organisations/1```
 
-Delete a Organisation (assuming the id of the Organisation is 1):
+Delete an organisation (assuming the id of the organisation is 1):
 ```curl -X DELETE http://localhost:8080/organisations/1```
 
 ## Database

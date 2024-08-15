@@ -13,18 +13,18 @@ scalacOptions := Seq(
   "-language:implicitConversions"
 )
 
-lazy val org = (project in file("."))
+lazy val `na-server` = (project in file("na-server"))
   .settings(
     commonSettings,
-    name := "archive",
+    name := "na-server",
     libraryDependencies ++= platformDependencies
   )
 
-lazy val it = (project in file("it"))
-  .dependsOn(org)
+lazy val `na-it` = (project in file("na-it"))
+  .dependsOn(`na-server`)
   .settings(
     commonSettings,
-    name := "archive-it",
+    name := "na-it",
     publish / skip := true,
     libraryDependencies ++= platformDependencies ++ testDependencies
   )

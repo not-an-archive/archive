@@ -12,11 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3.1.0
-      - name: Setup Eclipse Temurin - JDK 20
-        uses: actions/setup-java@v3.6.0
+      - uses: actions/checkout@v4
+      - name: Setup Eclipse Temurin - JDK 21
+        uses: actions/setup-java@v4
         with:
-          java-version: '20'
+          java-version: '21'
           distribution: 'temurin'
       - name: Integration Tests
         run: sbt na-it/test

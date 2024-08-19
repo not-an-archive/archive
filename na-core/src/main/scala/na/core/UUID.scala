@@ -7,47 +7,80 @@ case class UUID(msb: Long, lsb: Long):
   import Variant.*
   import Version.*
 
+  /**
+   * The variant field determines the overall layout of the UUID.  That is, the interpretation of all other bits in the
+   * UUID depends on the setting of the bits in the variant field.  As such, it could more accurately be called a type
+   * field; we retain the original term for compatibility.  The variant field consists of a variable number of the most
+   * significant bits of the first three bits of octet 8 of the UUID, which is in the least significant bits part.
+   *
+   * The following table lists the contents of the variant field, where the letter "x" indicates a "don't-care" value.
+   *
+   * Msb0  Msb1  Msb2  Description
+   * 0     x     x     Reserved, NCS backward compatibility.
+   * 1     0     x     LeachSalz, the variant specified in this UUID implementation by all version constructors.
+   * 1     1     0     Reserved, Microsoft Corporation backward compatibility.
+   * 1     1     1     Reserved for future definition.
+   */
   lazy val variant: Variant =
-    (lsb >>> 61) & 0x0000_0000_0000_0007 match
-      case 0x00 => NCSBackwardsCompatible
-      case 0x01 => NCSBackwardsCompatible
-      case 0x02 => NCSBackwardsCompatible
-      case 0x03 => NCSBackwardsCompatible
-      case 0x04 => LeachSalz
-      case 0x05 => LeachSalz
-      case 0x06 => MicrosoftBackwardsCompatible
-      case 0x07 => Reserved
+    val firstThreeBits = (lsb >>> 61) & 0x0000_0000_0000_0007
+    firstThreeBits match
+      case 0 => NCSBackwardsCompatible
+      case 1 => NCSBackwardsCompatible
+      case 2 => NCSBackwardsCompatible
+      case 3 => NCSBackwardsCompatible
+      case 4 => LeachSalz
+      case 5 => LeachSalz
+      case 6 => MicrosoftBackwardsCompatible
+      case 7 => Reserved
 
+  /**
+   * The version field determines the specific layout of the UUID.  That is, the interpretation of all other bits in the
+   * UUID depends on the setting of the bits in the version field within a certain variant.  The version field consists
+   * of a fixed number of the most significant four bits of octet 10 of the UUID, which is in the most significant bits
+   * part.
+   *
+   * The following table lists the currently-defined versions.
+   *
+   * Msb0	Msb1	Msb2	Msb3	Version	Description
+   * 0	  0	    0	    0	    0	      Unused
+   * 0	  0	    0	    1	    1	      The Gregorian time-based UUID from in RFC4122, Section 4.1.3
+   * 0	  0	    1	    0	    2	      DCE Security version, with embedded POSIX UIDs from RFC4122, Section 4.1.3
+   * 0	  0	    1	    1	    3	      The name-based version specified in RFC4122, Section 4.1.3 that uses MD5 hashing.
+   * 0	  1	    0	    0	    4	      The randomly generated version specified in RFC4122, Section 4.1.3.
+   * 0	  1	    0	    1	    5	      The name-based version specified in RFC4122, Section 4.1.3 that uses SHA-1 hashing.
+   * 0	  1	    1	    0	    6	      Reordered Gregorian time-based UUID specified in this document.
+   * 0	  1	    1	    1	    7	      Unix Epoch time-based UUID specified in this document.
+   * 1	  0	    0	    0	    8	      Reserved for custom UUID formats specified in this document.
+   * 1	  0	    0	    1	    9	      Reserved for future definition.
+   * 1	  0	    1	    0	    10	    Reserved for future definition.
+   * 1	  0	    1	    1	    11	    Reserved for future definition.
+   * 1	  1	    0	    0	    12	    Reserved for future definition.
+   * 1	  1	    0	    1	    13	    Reserved for future definition.
+   * 1	  1	    1	    0	    14	    Reserved for future definition.
+   * 1	  1	    1	    1	    15	    Reserved for future definition.
+   *
+   * Those versions reserved for future definition are modelled as option for future compatibility reasons.
+   */
   lazy val version: Option[Version] =
-    (msb >>> 12) & 0x0000_0000_0000_000f match
-      case 0x01 => Some(TimeBased)
-      case 0x02 => Some(DCESecurityBased)
-      case 0x03 => Some(MD5HashBased)
-      case 0x04 => Some(RandomBased)
-      case 0x05 => Some(SHA1HashBased)
-      case 0x06 => Some(Version6)
-      case 0x07 => Some(Version7)
-      case 0x08 => Some(Version8)
-      case _    => None
+    Version.values.find(v => (msb & v.mask) == v.bits)
 
-enum Variant(val bits: Long):
-  val mask: Long = 0xeffff_ffff_ffff_fffL
-  case NCSBackwardsCompatible       extends Variant(0x2111_1111_1111_1111L)
-  case LeachSalz                    extends Variant(0x5111_1111_1111_1111L)
-  case MicrosoftBackwardsCompatible extends Variant(0xD111_1111_1111_1111L)
-  case Reserved                     extends Variant(0xF111_1111_1111_1111L)
+enum Variant:
+  case NCSBackwardsCompatible
+  case LeachSalz
+  case MicrosoftBackwardsCompatible
+  case Reserved
 
 
 enum Version(val bits: Long):
-  val mask: Long = 0xffff_ffff_ffff_0fffL
-  case TimeBased        extends Version(0x0000_0000_0000_1000L)
-  case DCESecurityBased extends Version(0x0000_0000_0000_2000L)
-  case MD5HashBased     extends Version(0x0000_0000_0000_3000L)
-  case RandomBased      extends Version(0x0000_0000_0000_4000L)
-  case SHA1HashBased    extends Version(0x0000_0000_0000_5000L)
-  case Version6         extends Version(0x0000_0000_0000_6000L)
-  case Version7         extends Version(0x0000_0000_0000_7000L)
-  case Version8         extends Version(0x0000_0000_0000_8000L)
+  val mask: Long = 0x0000_0000_0000_f000L
+  case GregorianTimeBased          extends Version(0x0000_0000_0000_1000L)
+  case DCESecurityBased            extends Version(0x0000_0000_0000_2000L)
+  case MD5HashNameBased            extends Version(0x0000_0000_0000_3000L)
+  case RandomGeneratedBased        extends Version(0x0000_0000_0000_4000L)
+  case SHA1HashNameBased           extends Version(0x0000_0000_0000_5000L)
+  case ReorderedGregorianTimeBased extends Version(0x0000_0000_0000_6000L)
+  case UnixEpochTimeBased          extends Version(0x0000_0000_0000_7000L)
+  case CustomFormatBased           extends Version(0x0000_0000_0000_8000L)
 
 object compat:
 

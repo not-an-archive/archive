@@ -3,8 +3,6 @@ package core
 
 case class UUID(msb: Long, lsb: Long):
 
-  import UUID.*
-
   /**
    * The variant field determines the overall layout of the UUID.  That is, the interpretation of all other bits in the
    * UUID depends on the setting of the bits in the variant field.  As such, it could more accurately be called a type
@@ -59,6 +57,7 @@ enum Variant:
   case LeachSalz
   case MicrosoftBackwardsCompatible
   case Reserved
+
 
 object Variant:
 

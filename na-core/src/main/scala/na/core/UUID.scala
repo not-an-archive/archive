@@ -35,9 +35,9 @@ case class UUID(msb: Long, lsb: Long):
 
   /**
    * The version field determines the specific layout of the UUID.  That is, the interpretation of all other bits in the
-   * UUID depends on the setting of the bits in the version field within a certain variant.  The version field consists
-   * of a fixed number of the most significant four bits of octet 10 of the UUID, which is in the most significant bits
-   * part.
+   * UUID depends on the setting of the bits in the version field within a certain variant.  As such, it could more
+   * accurately be called a sub type field.  The version field consists of the most significant four bits of octet 10 of
+   * the UUID, which is in the most significant bits part.
    *
    * The following table lists the currently-defined versions.
    *

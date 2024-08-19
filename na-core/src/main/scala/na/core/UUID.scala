@@ -4,8 +4,6 @@ package core
 case class UUID(msb: Long, lsb: Long):
 
   import UUID.*
-  import Variant.*
-  import Version.*
 
   /**
    * The variant field determines the overall layout of the UUID.  That is, the interpretation of all other bits in the
@@ -22,16 +20,7 @@ case class UUID(msb: Long, lsb: Long):
    * 1     1     1     Reserved for future definition.
    */
   lazy val variant: Variant =
-    val firstThreeBits = (lsb >>> 61) & 0x0000_0000_0000_0007
-    firstThreeBits match
-      case 0 => NCSBackwardsCompatible
-      case 1 => NCSBackwardsCompatible
-      case 2 => NCSBackwardsCompatible
-      case 3 => NCSBackwardsCompatible
-      case 4 => LeachSalz
-      case 5 => LeachSalz
-      case 6 => MicrosoftBackwardsCompatible
-      case 7 => Reserved
+    Variant.fromLeastSignificantBits(lsb)
 
   /**
    * The version field determines the specific layout of the UUID.  That is, the interpretation of all other bits in the
@@ -61,8 +50,9 @@ case class UUID(msb: Long, lsb: Long):
    *
    * Unused or those versions reserved for future definition are modelled as [None] for future compatibility reasons.
    */
-  lazy val version: Option[Version] =
-    Version.values.find(v => (msb & v.mask) == v.bits)
+  lazy val version: Version =
+    Version.fromMostSignificantBits(msb)
+
 
 enum Variant:
   case NCSBackwardsCompatible
@@ -70,9 +60,23 @@ enum Variant:
   case MicrosoftBackwardsCompatible
   case Reserved
 
+object Variant:
+
+  def fromLeastSignificantBits(lsb: Long): Variant =
+    val firstThreeBits = (lsb >>> 61) & 0x0000_0000_0000_0007
+    firstThreeBits match
+      case 0 => NCSBackwardsCompatible
+      case 1 => NCSBackwardsCompatible
+      case 2 => NCSBackwardsCompatible
+      case 3 => NCSBackwardsCompatible
+      case 4 => LeachSalz
+      case 5 => LeachSalz
+      case 6 => MicrosoftBackwardsCompatible
+      case 7 => Reserved
+
 
 enum Version(val bits: Long):
-  val mask: Long = 0x0000_0000_0000_f000L
+  case Unused                      extends Version(0x0000_0000_0000_0000L)
   case GregorianTimeBased          extends Version(0x0000_0000_0000_1000L)
   case DCESecurityBased            extends Version(0x0000_0000_0000_2000L)
   case MD5HashNameBased            extends Version(0x0000_0000_0000_3000L)
@@ -81,6 +85,25 @@ enum Version(val bits: Long):
   case ReorderedGregorianTimeBased extends Version(0x0000_0000_0000_6000L)
   case UnixEpochTimeBased          extends Version(0x0000_0000_0000_7000L)
   case CustomFormatBased           extends Version(0x0000_0000_0000_8000L)
+  case Version9                    extends Version(0x0000_0000_0000_9000L)
+  case Version10                   extends Version(0x0000_0000_0000_A000L)
+  case Version11                   extends Version(0x0000_0000_0000_B000L)
+  case Version12                   extends Version(0x0000_0000_0000_C000L)
+  case Version13                   extends Version(0x0000_0000_0000_D000L)
+  case Version14                   extends Version(0x0000_0000_0000_E000L)
+  case Version15                   extends Version(0x0000_0000_0000_F000L)
+
+
+object Version:
+
+  val Mask: Long = 0x0000_0000_0000_F000L
+
+  def fromMostSignificantBits(msb: Long): Version =
+    Version
+      .values
+      .find(_.bits == (msb & Mask))
+      .getOrElse(sys.error(s"missing version definition for version bits ${msb & Mask}"))
+
 
 object compat:
 

@@ -11,12 +11,12 @@ object Dependencies {
   val DoobieVersion        = "1.0.0-RC5"
   val CirceVersion         = "0.14.9"
   val PureConfigVersion    = "0.17.7"
-  val LogbackVersion       = "1.5.6"
+  val LogbackVersion       = "1.5.7"
 
   /** Test dependencies */
   val ScalaTestVersion     = "3.2.19"
   val ScalaCheckVersion    = "1.18.0"
-  val H2Version            = "2.2.224"
+  val H2Version            = "2.3.232"
   val FlywayVersion        = "10.17.1"
   val CatsEffectTestKit    = "1.5.0"
 

@@ -23,7 +23,7 @@ Get all organisations:
 Get a single organisation (assuming the id of the organisation is 1):
 ```curl http://localhost:8080/organisations/1```
 
-Update a organisation (assuming the id of the organisation is 1):
+Update an organisation (assuming the id of the organisation is 1):
 ```curl -X PUT --header "Content-Type: application/json" --data '{"name": "me.org"}' http://localhost:8080/organisations/1```
 
 Delete an organisation (assuming the id of the organisation is 1):
@@ -33,5 +33,4 @@ Delete an organisation (assuming the id of the organisation is 1):
 [h2](http://www.h2database.com/) is used as a database. This is an in memory database, so when stopping the application, the state of the microservice is lost.
 
 ## Running
-You can run the microservice with `sbt run`. By default it listens to port number 8080, you can change this in the `application.conf`.
-
+You can run the microservice with `sbt run`. By default, it listens to port number 8080, you can change this in the `application.conf`.

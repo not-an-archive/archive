@@ -18,5 +18,5 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - name: Integration Tests
-        run: sbt na-it/test
+      - name: Run Tests
+        run: sbt test

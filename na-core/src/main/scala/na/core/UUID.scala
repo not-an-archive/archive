@@ -59,7 +59,7 @@ case class UUID(msb: Long, lsb: Long):
    * 1	  1	    1	    0	    14	    Reserved for future definition.
    * 1	  1	    1	    1	    15	    Reserved for future definition.
    *
-   * Those versions reserved for future definition are modelled as option for future compatibility reasons.
+   * Unused or those versions reserved for future definition are modelled as [None] for future compatibility reasons.
    */
   lazy val version: Option[Version] =
     Version.values.find(v => (msb & v.mask) == v.bits)

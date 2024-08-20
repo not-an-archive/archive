@@ -1,13 +1,14 @@
 package organisation
 
 import cats.*
+import na.core.*
 
 import io.circe.*
 import io.circe.generic.semiauto.*
 
 import na.*
 
-case class Organisation(id: Option[Identity], name: String)
+case class Organisation(pid: Option[PID], name: String)
 
 object Organisation:
 
@@ -17,11 +18,11 @@ object Organisation:
   given organisationDecoder: Decoder[Organisation] =
     deriveDecoder[Organisation]
 
-  given organisationEntity[F[_]](using F: Monad[F]): HasIdentity[F, Organisation] =
-    new HasIdentity[F, Organisation]:
+  given organisationEntity[F[_]](using F: Monad[F]): HasPID[F, Organisation] =
+    new HasPID[F, Organisation]:
 
-      def id(organisation: Organisation): F[Option[Identity]] =
-        F.pure(organisation.id)
+      def id(organisation: Organisation): F[Option[PID]] =
+        F.pure(organisation.pid)
 
-      def withId(organisation: Organisation)(id: Identity): F[Organisation] =
-        F.pure(organisation.copy(id = Some(id)))
+      def withId(organisation: Organisation)(id: PID): F[Organisation] =
+        F.pure(organisation.copy(pid = Some(id)))

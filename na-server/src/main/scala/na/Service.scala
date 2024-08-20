@@ -1,5 +1,7 @@
 package na
 
+import core.*
+
 import cats.effect._
 import cats.data._
 import cats.implicits._
@@ -17,18 +19,18 @@ import org.http4s.headers._
 import scala.util.Try
 import org.http4s.HttpRoutes
 
-class Service[A : Decoder : Encoder](segment: String, repository: Repository[IO, A])(using E : HasIdentity[IO, A])
+class Service[A : Decoder : Encoder](segment: String, repository: Repository[IO, A])(using E : HasPID[IO, A])
   extends Http4sDsl[IO]:
 
   type EndPoint = Kleisli[IO, Request[IO], Response[IO]]
   val  EndPoint = Kleisli
 
   def http = HttpRoutes.of[IO] {
-    case req @ POST    -> Root / `segment`                    =>  create(req)
-    case req @ PUT     -> Root / `segment` / IdentityVar(id)  =>  update(id)(req)
-    case req @ GET     -> Root / `segment` / IdentityVar(id)  =>  read(id)(req)
-    case req @ DELETE  -> Root / `segment` / IdentityVar(id)  =>  delete(id)(req)
-    case req @ GET     -> Root / `segment`                    =>  stream(req)
+    case req @ POST    -> Root / `segment`               =>  create(req)
+    case req @ PUT     -> Root / `segment` / PIDVar(id)  =>  update(id)(req)
+    case req @ GET     -> Root / `segment` / PIDVar(id)  =>  read(id)(req)
+    case req @ DELETE  -> Root / `segment` / PIDVar(id)  =>  delete(id)(req)
+    case req @ GET     -> Root / `segment`               =>  stream(req)
   }
 
   def create: EndPoint =
@@ -40,7 +42,7 @@ class Service[A : Decoder : Encoder](segment: String, repository: Repository[IO,
       } yield response
     )
 
-  def update(id: Identity): EndPoint =
+  def update(id: PID): EndPoint =
     EndPoint(
       req => for {
         entity   <- req.decodeJson[A].withId(id)
@@ -49,10 +51,10 @@ class Service[A : Decoder : Encoder](segment: String, repository: Repository[IO,
       } yield response
     )
 
-  def read(id: Identity): EndPoint =
+  def read(id: PID): EndPoint =
     EndPoint(_ => repository.read(id).flatMap(httpOkOr404))
 
-  def delete(id: Identity): EndPoint =
+  def delete(id: PID): EndPoint =
     EndPoint(
       _  => repository.delete(id).flatMap {
         case Left(NotFoundError(_, _)) => NotFound()
@@ -92,7 +94,7 @@ class Service[A : Decoder : Encoder](segment: String, repository: Repository[IO,
     }
 
 
-object IdentityVar extends PathVar(Identity.apply)
+object PIDVar extends PathVar(PID.fromString)
 
 protected class PathVar[A](cast: String => A):
   def unapply(str: String): Option[A] =

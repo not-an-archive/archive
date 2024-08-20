@@ -17,6 +17,7 @@ object JavaUUIDCompatibilityProps extends Properties("uuid.compat"):
   property("v3IsJavaUUIDCompatible - MD5HashBased") =
     forAll(javaVersion3UUIDs)(isJavaUUIDVersion3Compatible)
 
+  import UUID.*
   import Variant.*
   import Version.*
   
@@ -28,39 +29,39 @@ object JavaUUIDCompatibilityProps extends Properties("uuid.compat"):
 
   def isJavaUUIDVariantCompatible(javaUUID: JavaUUID): Boolean =
     javaUUID.variant match
-      case 0 => javaUUID.asScala.variant == NCSBackwardsCompatible
-      case 2 => javaUUID.asScala.variant == LeachSalz
-      case 6 => javaUUID.asScala.variant == MicrosoftBackwardsCompatible
-      case 7 => javaUUID.asScala.variant == Reserved
+      case 0 => javaUUID.asScalaUUID.variant == NCSBackwardsCompatible
+      case 2 => javaUUID.asScalaUUID.variant == LeachSalz
+      case 6 => javaUUID.asScalaUUID.variant == MicrosoftBackwardsCompatible
+      case 7 => javaUUID.asScalaUUID.variant == Reserved
       case _ => false
 
   def isJavaUUIDVersionCompatible(javaUUID: JavaUUID): Boolean =
     javaUUID.version match
-      case  0 => javaUUID.asScala.version == Unused
-      case  1 => javaUUID.asScala.version == GregorianTimeBased
-      case  2 => javaUUID.asScala.version == DCESecurityBased
-      case  3 => javaUUID.asScala.version == MD5HashNameBased
-      case  4 => javaUUID.asScala.version == RandomGeneratedBased
-      case  5 => javaUUID.asScala.version == SHA1HashNameBased
-      case  6 => javaUUID.asScala.version == ReorderedGregorianTimeBased
-      case  7 => javaUUID.asScala.version == UnixEpochTimeBased
-      case  8 => javaUUID.asScala.version == CustomFormatBased
-      case  9 => javaUUID.asScala.version == Version9
-      case 10 => javaUUID.asScala.version == Version10
-      case 11 => javaUUID.asScala.version == Version11
-      case 12 => javaUUID.asScala.version == Version12
-      case 13 => javaUUID.asScala.version == Version13
-      case 14 => javaUUID.asScala.version == Version14
-      case 15 => javaUUID.asScala.version == Version15
+      case  0 => javaUUID.asScalaUUID.version == Unused
+      case  1 => javaUUID.asScalaUUID.version == GregorianTimeBased
+      case  2 => javaUUID.asScalaUUID.version == DCESecurityBased
+      case  3 => javaUUID.asScalaUUID.version == MD5HashNameBased
+      case  4 => javaUUID.asScalaUUID.version == RandomGeneratedBased
+      case  5 => javaUUID.asScalaUUID.version == SHA1HashNameBased
+      case  6 => javaUUID.asScalaUUID.version == ReorderedGregorianTimeBased
+      case  7 => javaUUID.asScalaUUID.version == UnixEpochTimeBased
+      case  8 => javaUUID.asScalaUUID.version == CustomFormatBased
+      case  9 => javaUUID.asScalaUUID.version == Version9
+      case 10 => javaUUID.asScalaUUID.version == Version10
+      case 11 => javaUUID.asScalaUUID.version == Version11
+      case 12 => javaUUID.asScalaUUID.version == Version12
+      case 13 => javaUUID.asScalaUUID.version == Version13
+      case 14 => javaUUID.asScalaUUID.version == Version14
+      case 15 => javaUUID.asScalaUUID.version == Version15
       case _  => false
 
   def isJavaUUIDVersion4Compatible(javaUUID: JavaUUID): Boolean =
-    val isRandomBased = javaUUID.asScala.version == RandomGeneratedBased
+    val isRandomBased = javaUUID.asScalaUUID.version == RandomGeneratedBased
     isRandomBased && isJavaUUIDVariantCompatible(javaUUID)
 
   def isJavaUUIDVersion3Compatible(javaUUID: JavaUUID, name: Array[Byte]): Boolean =
     val isNameBased = java.util.UUID.nameUUIDFromBytes(name) == javaUUID
-    val isMD5Hased  = javaUUID.asScala.version == MD5HashNameBased
+    val isMD5Hased  = javaUUID.asScalaUUID.version == MD5HashNameBased
     isNameBased && isMD5Hased && isJavaUUIDVariantCompatible(javaUUID)
 
 

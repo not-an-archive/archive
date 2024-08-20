@@ -5,10 +5,10 @@ import org.scalacheck.*
 
 object UUIDProps extends Properties("na.core.UUID"):
 
-  import core.*
-
   import util.*
   import Prop.*
+
+  import UUID.*
   import Variant.*
   import Version.*
 
@@ -21,21 +21,26 @@ object UUIDProps extends Properties("na.core.UUID"):
   }
 
   property("version") = forAll { (msb: Long, lsb: Long) =>
+    val expected = maskedValue(0x00000000_0000_00F0_00L)
     UUID(msb, lsb).version match
-      case Unused                      =>  (msb & 0xF000L) == 0x0000L
-      case GregorianTimeBased          =>  (msb & 0xF000L) == 0x1000L
-      case DCESecurityBased            =>  (msb & 0xF000L) == 0x2000L
-      case MD5HashNameBased            =>  (msb & 0xF000L) == 0x3000L
-      case RandomGeneratedBased        =>  (msb & 0xF000L) == 0x4000L
-      case SHA1HashNameBased           =>  (msb & 0xF000L) == 0x5000L
-      case ReorderedGregorianTimeBased =>  (msb & 0xF000L) == 0x6000L
-      case UnixEpochTimeBased          =>  (msb & 0xF000L) == 0x7000L
-      case CustomFormatBased           =>  (msb & 0xF000L) == 0x8000L
-      case Version9                    =>  (msb & 0xF000L) == 0x9000L
-      case Version10                   =>  (msb & 0xF000L) == 0xA000L
-      case Version11                   =>  (msb & 0xF000L) == 0xB000L
-      case Version12                   =>  (msb & 0xF000L) == 0xC000L
-      case Version13                   =>  (msb & 0xF000L) == 0xD000L
-      case Version14                   =>  (msb & 0xF000L) == 0xE000L
-      case Version15                   =>  (msb & 0xF000L) == 0xF000L
+      case Unused                      =>  expected(msb) == 0x00000000_0000_0000_00L
+      case GregorianTimeBased          =>  expected(msb) == 0x00000000_0000_0010_00L
+      case DCESecurityBased            =>  expected(msb) == 0x00000000_0000_0020_00L
+      case MD5HashNameBased            =>  expected(msb) == 0x00000000_0000_0030_00L
+      case RandomGeneratedBased        =>  expected(msb) == 0x00000000_0000_0040_00L
+      case SHA1HashNameBased           =>  expected(msb) == 0x00000000_0000_0050_00L
+      case ReorderedGregorianTimeBased =>  expected(msb) == 0x00000000_0000_0060_00L
+      case UnixEpochTimeBased          =>  expected(msb) == 0x00000000_0000_0070_00L
+      case CustomFormatBased           =>  expected(msb) == 0x00000000_0000_0080_00L
+      case Version9                    =>  expected(msb) == 0x00000000_0000_0090_00L
+      case Version10                   =>  expected(msb) == 0x00000000_0000_00A0_00L
+      case Version11                   =>  expected(msb) == 0x00000000_0000_00B0_00L
+      case Version12                   =>  expected(msb) == 0x00000000_0000_00C0_00L
+      case Version13                   =>  expected(msb) == 0x00000000_0000_00D0_00L
+      case Version14                   =>  expected(msb) == 0x00000000_0000_00E0_00L
+      case Version15                   =>  expected(msb) == 0x00000000_0000_00F0_00L
   }
+
+  private def maskedValue(m: Long)(v: Long): Long =
+    v & m
+

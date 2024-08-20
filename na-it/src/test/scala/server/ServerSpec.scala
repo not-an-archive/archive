@@ -15,6 +15,7 @@ import scala.concurrent.*
 import io.circe.*
 import io.circe.literal.*
 import na.*
+import core.*
 import organisation.*
 
 class ServerSpec
@@ -69,7 +70,7 @@ class ServerSpec
       val json = asyncJsonFrom(POST(endpoint).withEntity(entity)).hcursor
 
       val cp = new Checkpoint
-      cp { json.downField("id").as[Identity].isRight   === true }
+      cp { json.downField("id").as[PID].isRight === true }
       cp { json.downField("name").as[String]    === Right(name) }
       cp.reportAll()
 
@@ -77,7 +78,7 @@ class ServerSpec
   }
 
   it should "update a organisation" in {
-      val id = createOrganisation("my organisation 2")
+      val pid = createOrganisation("my organisation 2")
 
       val name = "updated organisation"
       val updateJson =
@@ -85,64 +86,64 @@ class ServerSpec
           "name": $name
         }"""
 
-      asyncJsonFrom(PUT(endpoint / id).withEntity(updateJson)) shouldBe json"""
+      asyncJsonFrom(PUT(endpoint / pid.uuid).withEntity(updateJson)) shouldBe json"""
         {
-          "id": $id,
+          "pid": ${pid.uuid},
           "name": $name
         }"""
   }
 
   it should "return a single organisation" in {
       val name = "my organisation 3"
-      val id = createOrganisation(name)
+      val pid = createOrganisation(name)
 
-      client.use(_.expect[Json](endpoint / id)).unsafeRunSync() shouldBe json"""
+      client.use(_.expect[Json](endpoint / pid.uuid)).unsafeRunSync() shouldBe json"""
         {
-          "id": $id,
+          "pid": ${pid.uuid},
           "name": $name
         }"""
   }
 
   it should "delete a organisation" in {
       val name = "my organisation 4"
-      val id = createOrganisation(name)
+      val pid = createOrganisation(name)
 
-      client.use(_.status(DELETE(endpoint / id))).unsafeRunSync() shouldBe Status.NoContent
-      client.use(_.status(GET(endpoint / id))).unsafeRunSync()    shouldBe Status.NotFound
+      client.use(_.status(DELETE(endpoint / pid.uuid))).unsafeRunSync() shouldBe Status.NoContent
+      client.use(_.status(GET(endpoint / pid.uuid))).unsafeRunSync()    shouldBe Status.NotFound
   }
 
   it should "return all organisations" in {
     // Remove all existing organisations
     val json = client.use(_.expect[Json](endpoint)).unsafeRunSync()
     json.hcursor.as[List[Organisation]].foreach(_.foreach(c =>
-      client.use(_.status(DELETE(endpoint / c.id.get))).unsafeRunSync() shouldBe Status.NoContent
+      client.use(_.status(DELETE(endpoint / c.pid.get.uuid))).unsafeRunSync() shouldBe Status.NoContent
     ))
 
     // Add new organisations
     val name1 = "my organisation 1"
     val name2 = "my organisation 2"
-    val id1 = createOrganisation(name1)
-    val id2 = createOrganisation(name2)
+    val pid1 = createOrganisation(name1)
+    val pid2 = createOrganisation(name2)
 
     // Retrieve organisations
     client.use(_.expect[Json](endpoint)).unsafeRunSync() shouldBe json"""
       [
         {
-          "id": $id1,
+          "pid": $pid1,
           "name": $name1
         },
         {
-          "id": $id2,
+          "pid": $pid2,
           "name": $name2
         }
       ]"""
   }
 
-  private def createOrganisation(name: String): String =
+  private def createOrganisation(name: String): PID =
     val createJson = json"""
       {
         "name": $name
       }"""
     val request = Request[IO](method = Method.POST, uri = endpoint).withEntity(createJson)
-    val id = asyncJsonFrom(request).hcursor.downField("id").as[Identity]
-    id.getOrElse(sys.error(s"error creating: ${createJson.spaces2}\n$id}")).toString
+    val pid = asyncJsonFrom(request).hcursor.downField("pid").as[PID]
+    pid.getOrElse(sys.error(s"error creating: ${createJson.spaces2}\n$pid}"))

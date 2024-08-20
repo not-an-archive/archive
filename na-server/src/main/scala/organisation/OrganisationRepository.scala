@@ -1,13 +1,14 @@
 package organisation
 
-import java.util.UUID
 import cats.implicits.*
 import cats.effect.*
 import fs2.*
 import doobie.Meta
 import doobie.implicits.*
 import doobie.util.transactor.*
+
 import na.*
+import core.*
 
 object OrganisationRepository:
 
@@ -33,16 +34,16 @@ object OrganisationRepository:
               name
           )
           VALUES (
-            ${organisation.id},
+            ${organisation.pid},
             ${organisation.name}
           )
         """
         .update
         .run
         .transact(transactor)
-        .map(expectUpdate(organisation.id))
+        .map(expectUpdate(organisation.pid))
 
-      def read(id: Identity): IO[Result[Organisation]] =
+      def read(id: PID): IO[Result[Organisation]] =
         sql"""
           SELECT
             id,
@@ -59,7 +60,7 @@ object OrganisationRepository:
           case Some(organisation) => Right(organisation)
           case None => Left(NotFoundError(name, id))
 
-      def delete(id: Identity): IO[Result[Unit]] =
+      def delete(id: PID): IO[Result[Unit]] =
         sql"""
           DELETE FROM
             organisations
@@ -78,21 +79,22 @@ object OrganisationRepository:
           SET
             name = ${organisation.name}
           WHERE
-            id = ${organisation.id}
+            id = ${organisation.pid}
         """
         .update
         .run
         .transact(transactor)
-        .map(expectUpdate(organisation.id))
+        .map(expectUpdate(organisation.pid))
 
-      private def expectUpdate(id: Option[Identity])(rowCount: Int): Result[Unit] =
+      private def expectUpdate(id: Option[PID])(rowCount: Int): Result[Unit] =
         id match
-          case None                      => Left(NoIdentityError(name))
+          case None                      => Left(NoPIDError(name))
           case Some(id) if rowCount == 0 => Left(UpdateError(name, id))
           case _                         => Right(())
 
-      private def expectUpdate(id: Identity)(rowCount: Int): Result[Unit] =
+      private def expectUpdate(id: PID)(rowCount: Int): Result[Unit] =
         expectUpdate(Some(id))(rowCount)
 
   given uuidMeta: Meta[UUID] =
-    doobie.h2.implicits.UuidType
+    import UUID.compat.*
+    doobie.h2.implicits.UuidType.imap(_.asScalaUUID)(_.asJavaUUID)

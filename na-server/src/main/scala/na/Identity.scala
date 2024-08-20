@@ -5,12 +5,16 @@ import core.*
 
 trait HasPID[F[_], A]:
 
+  import PID.*
+  import Born.*
+  import Copy.*
+
   def pid(a: A): F[Option[PID]]
 
   def withPID(a: A)(id: PID): F[A]
 
   def withGeneratedPID(a: A): F[A] =
-    withPID(a)(PID.random(digitallyBorn = true))
+    withPID(a)(PID.random(born = Digitally, copy = External))
 
 
 extension [F[_], A](fa: F[A])(using  F: FlatMap[F], E : HasPID[F, A])

@@ -6,7 +6,7 @@ import io.circe.*
 import java.util.*
 
 case class PID(msb: Long, lsb: Long):
-  
+
   import PID.*
 
 //  assert(variant == Variant.LeachSalz, "No archive compliant uuid variant: LeachSalz)")
@@ -27,7 +27,18 @@ case class PID(msb: Long, lsb: Long):
    * 1     1     1     Reserved for future definition.
    */
   lazy val variant: Variant =
-    Variant.fromLeastSignificantBits(lsb)
+    import Variant.*
+    val firstThreeBits = (lsb & 0xE000_000000000000L) >>> 61
+    firstThreeBits match
+      case 0 => NCSBackwardsCompatible
+      case 1 => NCSBackwardsCompatible
+      case 2 => NCSBackwardsCompatible
+      case 3 => NCSBackwardsCompatible
+      case 4 => LeachSalz
+      case 5 => LeachSalz
+      case 6 => MicrosoftBackwardsCompatible
+      case 7 => Reserved
+
 
   /**
    * The version field determines the specific layout of the UUID.  That is, the interpretation of all other bits in the
@@ -56,13 +67,13 @@ case class PID(msb: Long, lsb: Long):
    * 1	  1	    1	    1	    15	    Reserved for future definition.
    */
   lazy val version: Version =
-    Version.values.find(extractor(msb)).getOrElse(sys.error(s"no version embedding"))
+    Version.values.find(extractor(msb)).getOrElse(sys.error(s"no version embedding: msb=${msb.toBinaryString}"))
 
   lazy val born: Born =
-    Born.values.find(extractor(msb)).getOrElse(sys.error(s"no born embedding"))
+    Born.values.find(extractor(lsb)).getOrElse(sys.error(s"no born embedding: lsb=${lsb.toBinaryString}"))
 
   lazy val copy: Copy =
-    Copy.values.find(extractor(msb)).getOrElse(sys.error(s"no copy embedding"))
+    Copy.values.find(extractor(lsb)).getOrElse(sys.error(s"no copy embedding: lsb=${lsb.toBinaryString}"))
 
   private def extractor(bits: Long)(v: Embedded): Boolean =
     v.value == (bits & v.mask)
@@ -79,63 +90,51 @@ object PID:
   def fromString(s: String): PID =
     UUID.fromString(s).toPID
 
-  def random(digitallyBorn: Boolean): PID =
+  def random(born: Born, copy: Copy): PID =
     UUID
       .randomUUID
       .toPID
       .set(Version.CustomFormatBased)
-      .set(if digitallyBorn then Born.Digitally else Born.Physically)
+      .set(born)
+      .set(copy)
 
-  enum Variant:
-    case NCSBackwardsCompatible
-    case LeachSalz
-    case MicrosoftBackwardsCompatible
-    case Reserved
+  abstract class Embedded(val mask: Long):
+    val value: Long
 
-  object Variant:
-    def fromLeastSignificantBits(lsb: Long): Variant =
-      val firstThreeBits = (lsb & 0xE000_000000000000L) >>> 61
-      firstThreeBits match
-        case 0 => NCSBackwardsCompatible
-        case 1 => NCSBackwardsCompatible
-        case 2 => NCSBackwardsCompatible
-        case 3 => NCSBackwardsCompatible
-        case 4 => LeachSalz
-        case 5 => LeachSalz
-        case 6 => MicrosoftBackwardsCompatible
-        case 7 => Reserved
+  enum Variant(override val value: Long) extends Embedded(0xE000_000000000000L):
+    case NCSBackwardsCompatible       extends Variant(0x0000_000000000000L)
+    case LeachSalz                    extends Variant(0x8000_000000000000L)
+    case MicrosoftBackwardsCompatible extends Variant(0xC000_000000000000L)
+    case Reserved                     extends Variant(0xE000_000000000000L)
 
-  trait Embedded:
-    def mask: Long
-    def value: Long
+  enum Version(override val value: Long) extends Embedded(0x00000000_0000_F000L):
+    case Unused                      extends Version(0x00000000_0000_0000L)
+    case GregorianTimeBased          extends Version(0x00000000_0000_1000L)
+    case DCESecurityBased            extends Version(0x00000000_0000_2000L)
+    case MD5HashNameBased            extends Version(0x00000000_0000_3000L)
+    case RandomGeneratedBased        extends Version(0x00000000_0000_4000L)
+    case SHA1HashNameBased           extends Version(0x00000000_0000_5000L)
+    case ReorderedGregorianTimeBased extends Version(0x00000000_0000_6000L)
+    case UnixEpochTimeBased          extends Version(0x00000000_0000_7000L)
+    case CustomFormatBased           extends Version(0x00000000_0000_8000L)
+    case Version9                    extends Version(0x00000000_0000_9000L)
+    case Version10                   extends Version(0x00000000_0000_A000L)
+    case Version11                   extends Version(0x00000000_0000_B000L)
+    case Version12                   extends Version(0x00000000_0000_C000L)
+    case Version13                   extends Version(0x00000000_0000_D000L)
+    case Version14                   extends Version(0x00000000_0000_E000L)
+    case Version15                   extends Version(0x00000000_0000_F000L)
 
-  enum Version(override val value: Long, override val mask: Long = 0x00000000_0000_F000L) extends Embedded:
-    case Unused                      extends Version(value = 0x00000000_0000_0000L)
-    case GregorianTimeBased          extends Version(value = 0x00000000_0000_1000L)
-    case DCESecurityBased            extends Version(value = 0x00000000_0000_2000L)
-    case MD5HashNameBased            extends Version(value = 0x00000000_0000_3000L)
-    case RandomGeneratedBased        extends Version(value = 0x00000000_0000_4000L)
-    case SHA1HashNameBased           extends Version(value = 0x00000000_0000_5000L)
-    case ReorderedGregorianTimeBased extends Version(value = 0x00000000_0000_6000L)
-    case UnixEpochTimeBased          extends Version(value = 0x00000000_0000_7000L)
-    case CustomFormatBased           extends Version(value = 0x00000000_0000_8000L)
-    case Version9                    extends Version(value = 0x00000000_0000_9000L)
-    case Version10                   extends Version(value = 0x00000000_0000_A000L)
-    case Version11                   extends Version(value = 0x00000000_0000_B000L)
-    case Version12                   extends Version(value = 0x00000000_0000_C000L)
-    case Version13                   extends Version(value = 0x00000000_0000_D000L)
-    case Version14                   extends Version(value = 0x00000000_0000_E000L)
-    case Version15                   extends Version(value = 0x00000000_0000_F000L)
+  enum Born(override val value: Long) extends Embedded(0x0000_000000000001L):
+    case Digitally  extends Born(value = 0x0000_000000000000L)
+    case Physically extends Born(value = 0x0000_000000000001L)
 
-  enum Born(override val mask: Long, override val value: Long) extends Embedded:
-    case Digitally  extends Born(mask = 0x0000_000000000001L, value = 0x0000_000000000000L)
-    case Physically extends Born(mask = 0x0000_000000000001L, value = 0x0000_000000000001L)
+  enum Copy(override val value: Long) extends Embedded(0x0000_000000000006L):
+    case External   extends Copy(0x0000_000000000000L)
+    case Internal1  extends Copy(0x0000_000000000002L)
+    case Internal2  extends Copy(0x0000_000000000004L)
+    case Internal3  extends Copy(0x0000_000000000006L)
 
-  enum Copy(override val mask: Long, override val value: Long) extends Embedded:
-    case External   extends Copy(mask = 0x0000_000000000006L, value = 0x0000_000000000000L)
-    case Internal1  extends Copy(mask = 0x0000_000000000006L, value = 0x0000_000000000002L)
-    case Internal2  extends Copy(mask = 0x0000_000000000006L, value = 0x0000_000000000005L)
-    case Internal3  extends Copy(mask = 0x0000_000000000006L, value = 0x0000_000000000006L)
 
   given pidEncoder: Encoder[PID] =
     Encoder.encodeUUID.contramap(_.toUUID)

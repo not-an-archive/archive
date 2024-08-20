@@ -3,10 +3,10 @@ package core
 
 import io.circe.*
 
+import java.util.*
+
 case class PID(msb: Long, lsb: Long):
-
-  import java.util.*
-
+  
   import PID.*
 
 //  assert(variant == Variant.LeachSalz, "No archive compliant uuid variant: LeachSalz)")
@@ -54,14 +54,21 @@ case class PID(msb: Long, lsb: Long):
    * 1	  1	    0	    1	    13	    Reserved for future definition.
    * 1	  1	    1	    0	    14	    Reserved for future definition.
    * 1	  1	    1	    1	    15	    Reserved for future definition.
-   *
-   * Unused or those versions reserved for future definition are modelled as [None] for future compatibility reasons.
    */
   lazy val version: Version =
-    Version.fromMostSignificantBits(msb)
+    Version.values.find(extractor(msb)).getOrElse(sys.error(s"no version embedding"))
 
-  def transform(v: Version): PID =
-    copy(msb = (msb & ~Version.Mask) | (v.msb & Version.Mask))
+  lazy val born: Born =
+    Born.values.find(extractor(msb)).getOrElse(sys.error(s"no born embedding"))
+
+  lazy val copy: Copy =
+    Copy.values.find(extractor(msb)).getOrElse(sys.error(s"no copy embedding"))
+
+  private def extractor(bits: Long)(v: Embedded): Boolean =
+    v.value == (bits & v.mask)
+
+  def set(value: Embedded): PID =
+    copy(msb = (msb & ~value.mask) | (value.value & value.mask))
 
   override def toString: String =
     UUID(msb, lsb).toString
@@ -69,22 +76,15 @@ case class PID(msb: Long, lsb: Long):
 
 object PID:
 
-  import java.util.*
-
   def fromString(s: String): PID =
     UUID.fromString(s).toPID
 
   def random(digitallyBorn: Boolean): PID =
-    val pid: PID =
-      UUID
-        .randomUUID
-        .toPID
-        .transform(Version.CustomFormatBased)
-
-    if digitallyBorn then
-      pid.copy(lsb = pid.lsb.set(Born.Digitally.mask))
-    else
-      pid.copy(lsb = pid.lsb.unset(Born.Physically.mask))
+    UUID
+      .randomUUID
+      .toPID
+      .set(Version.CustomFormatBased)
+      .set(if digitallyBorn then Born.Digitally else Born.Physically)
 
   enum Variant:
     case NCSBackwardsCompatible
@@ -94,7 +94,7 @@ object PID:
 
   object Variant:
     def fromLeastSignificantBits(lsb: Long): Variant =
-      val firstThreeBits = (lsb >>> 61) & 0x00_0000_000000000007L
+      val firstThreeBits = (lsb & 0xE000_000000000000L) >>> 61
       firstThreeBits match
         case 0 => NCSBackwardsCompatible
         case 1 => NCSBackwardsCompatible
@@ -105,52 +105,47 @@ object PID:
         case 6 => MicrosoftBackwardsCompatible
         case 7 => Reserved
 
-  enum Version(val msb: Long):
-    case Unused extends Version(0x00000000_0000_0000_00L)
-    case GregorianTimeBased extends Version(0x00000000_0000_0010_00L)
-    case DCESecurityBased extends Version(0x00000000_0000_0020_00L)
-    case MD5HashNameBased extends Version(0x00000000_0000_0030_00L)
-    case RandomGeneratedBased extends Version(0x00000000_0000_0040_00L)
-    case SHA1HashNameBased extends Version(0x00000000_0000_0050_00L)
-    case ReorderedGregorianTimeBased extends Version(0x00000000_0000_0060_00L)
-    case UnixEpochTimeBased extends Version(0x00000000_0000_0070_00L)
-    case CustomFormatBased extends Version(0x00000000_0000_0080_00L)
-    case Version9 extends Version(0x00000000_0000_0090_00L)
-    case Version10 extends Version(0x00000000_0000_00A0_00L)
-    case Version11 extends Version(0x00000000_0000_00B0_00L)
-    case Version12 extends Version(0x00000000_0000_00C0_00L)
-    case Version13 extends Version(0x00000000_0000_00D0_00L)
-    case Version14 extends Version(0x00000000_0000_00E0_00L)
-    case Version15 extends Version(0x00000000_0000_00F0_00L)
+  trait Embedded:
+    def mask: Long
+    def value: Long
 
-  object Version:
-    val Mask: Long = 0x00000000_0000_00F0_00L
+  enum Version(override val value: Long, override val mask: Long = 0x00000000_0000_F000L) extends Embedded:
+    case Unused                      extends Version(value = 0x00000000_0000_0000L)
+    case GregorianTimeBased          extends Version(value = 0x00000000_0000_1000L)
+    case DCESecurityBased            extends Version(value = 0x00000000_0000_2000L)
+    case MD5HashNameBased            extends Version(value = 0x00000000_0000_3000L)
+    case RandomGeneratedBased        extends Version(value = 0x00000000_0000_4000L)
+    case SHA1HashNameBased           extends Version(value = 0x00000000_0000_5000L)
+    case ReorderedGregorianTimeBased extends Version(value = 0x00000000_0000_6000L)
+    case UnixEpochTimeBased          extends Version(value = 0x00000000_0000_7000L)
+    case CustomFormatBased           extends Version(value = 0x00000000_0000_8000L)
+    case Version9                    extends Version(value = 0x00000000_0000_9000L)
+    case Version10                   extends Version(value = 0x00000000_0000_A000L)
+    case Version11                   extends Version(value = 0x00000000_0000_B000L)
+    case Version12                   extends Version(value = 0x00000000_0000_C000L)
+    case Version13                   extends Version(value = 0x00000000_0000_D000L)
+    case Version14                   extends Version(value = 0x00000000_0000_E000L)
+    case Version15                   extends Version(value = 0x00000000_0000_F000L)
 
-    def fromMostSignificantBits(msb: Long): Version =
-      Version
-        .values
-        .find(_.msb == (msb & Mask))
-        .getOrElse(sys.error(s"missing version definition for version bits ${msb & Mask}"))
+  enum Born(override val mask: Long, override val value: Long) extends Embedded:
+    case Digitally  extends Born(mask = 0x0000_000000000001L, value = 0x0000_000000000000L)
+    case Physically extends Born(mask = 0x0000_000000000001L, value = 0x0000_000000000001L)
 
-  enum Born(val mask: Long, lsb: Long):
-    case Digitally  extends Born(mask = 0x00_0000_000000000001L, lsb = 0x00_0000_000000000000L)
-    case Physically extends Born(mask = 0x00_0000_000000000001L, lsb = 0x00_0000_000000000001L)
+  enum Copy(override val mask: Long, override val value: Long) extends Embedded:
+    case External   extends Copy(mask = 0x0000_000000000006L, value = 0x0000_000000000000L)
+    case Internal1  extends Copy(mask = 0x0000_000000000006L, value = 0x0000_000000000002L)
+    case Internal2  extends Copy(mask = 0x0000_000000000006L, value = 0x0000_000000000005L)
+    case Internal3  extends Copy(mask = 0x0000_000000000006L, value = 0x0000_000000000006L)
 
-  enum Copy(mask: Long, lsb: Long):
-    case External   extends Copy(mask = 0x00_0000_000000000006L, lsb = 0x00_0000_000000000000L)
-    case Internal1  extends Copy(mask = 0x00_0000_000000000006L, lsb = 0x00_0000_000000000002L)
-    case Internal2  extends Copy(mask = 0x00_0000_000000000006L, lsb = 0x00_0000_000000000005L)
-    case Internal3  extends Copy(mask = 0x00_0000_000000000006L, lsb = 0x00_0000_000000000006L)
+  given pidEncoder: Encoder[PID] =
+    Encoder.encodeUUID.contramap(_.toUUID)
+
+  given pidDecoder: Decoder[PID] =
+    Decoder.decodeUUID.map(_.toPID)
 
   import org.http4s.Uri.Path.SegmentEncoder
 
-  given organisationEncoder: Encoder[PID] =
-    Encoder.encodeUUID.contramap(_.toUUID)
-
-  given organisationDecoder: Decoder[PID] =
-    Decoder.decodeUUID.map(_.toPID)
-
-  given segmentEncoder: SegmentEncoder[PID] =
+  given pidSegmentEncoder: SegmentEncoder[PID] =
     SegmentEncoder.uuidSegmentEncoder.contramap[PID](_.toUUID)
 
 

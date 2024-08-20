@@ -42,21 +42,17 @@ object Server extends IOApp:
                       )
                     )
       exitCode   <- EmberServerBuilder
-                    .default[IO]
-                    .withHost(environment.config.server.host)
-                    .withPort(environment.config.server.port)
-                    .withHttpApp(httpApp.orNotFound)
-                    .build
-                    .use(_ => IO.never)
-                    .as(ExitCode.Success)
+                      .default[IO]
+                      .withHost(environment.config.server.host)
+                      .withPort(environment.config.server.port)
+                      .withHttpApp(httpApp.orNotFound)
+                      .build
+                      .use(_ => IO.never)
+                      .as(ExitCode.Success)
     } yield exitCode
 
   def run(args: List[String]): IO[ExitCode] =
     create
 
-  def errorHandler(t: Throwable, msg: => String) : OptionT[IO, Unit] =
-    OptionT.liftF(
-      IO.println(msg) >>
-        IO.println(t) >>
-        IO(t.printStackTrace())
-    )
+  private def errorHandler(t: Throwable, msg: => String) : OptionT[IO, Unit] =
+    OptionT.liftF(IO.println(msg) >> IO.println(t) >> IO(t.printStackTrace()))

@@ -18,7 +18,7 @@ object OrganisationRepository:
       def stream: Stream[IO, Organisation] =
         sql"""
           SELECT
-            id,
+            pid,
             name
           FROM
             organisations
@@ -30,7 +30,7 @@ object OrganisationRepository:
       def create(organisation: Organisation): IO[Result[Unit]] =
         sql"""
           INSERT INTO organisations (
-              id,
+              pid,
               name
           )
           VALUES (
@@ -43,34 +43,34 @@ object OrganisationRepository:
         .transact(transactor)
         .map(expectUpdate(organisation.pid))
 
-      def read(id: PID): IO[Result[Organisation]] =
+      def read(pid: PID): IO[Result[Organisation]] =
         sql"""
           SELECT
-            id,
+            pid,
             name
           FROM
             organisations
           WHERE
-            id = $id
+            pid = $pid
         """
         .query[Organisation]
         .option
         .transact(transactor)
         .map:
           case Some(organisation) => Right(organisation)
-          case None => Left(NotFoundError(name, id))
+          case None => Left(NotFoundError(name, pid))
 
-      def delete(id: PID): IO[Result[Unit]] =
+      def delete(pid: PID): IO[Result[Unit]] =
         sql"""
           DELETE FROM
             organisations
           WHERE
-            id = $id
+            pid = $pid
         """
         .update
         .run
         .transact(transactor)
-        .map(expectUpdate(id))
+        .map(expectUpdate(pid))
 
       def update(organisation: Organisation): IO[Result[Unit]] =
         sql"""
@@ -79,21 +79,21 @@ object OrganisationRepository:
           SET
             name = ${organisation.name}
           WHERE
-            id = ${organisation.pid}
+            pid = ${organisation.pid}
         """
         .update
         .run
         .transact(transactor)
         .map(expectUpdate(organisation.pid))
 
-      private def expectUpdate(id: Option[PID])(rowCount: Int): Result[Unit] =
-        id match
-          case None                      => Left(NoPIDError(name))
-          case Some(id) if rowCount == 0 => Left(UpdateError(name, id))
-          case _                         => Right(())
+      private def expectUpdate(pid: Option[PID])(rowCount: Int): Result[Unit] =
+        pid match
+          case None                       => Left(NoPIDError(name))
+          case Some(pid) if rowCount == 0 => Left(UpdateError(name, pid))
+          case _                          => Right(())
 
-      private def expectUpdate(id: PID)(rowCount: Int): Result[Unit] =
-        expectUpdate(Some(id))(rowCount)
+      private def expectUpdate(pid: PID)(rowCount: Int): Result[Unit] =
+        expectUpdate(Some(pid))(rowCount)
 
   given uuidMeta: Meta[UUID] =
     import UUID.compat.*

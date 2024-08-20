@@ -2,25 +2,23 @@ package na
 
 import core.*
 
-import cats.effect._
-import cats.data._
-import cats.implicits._
+import cats.effect.*
+import cats.data.*
+import cats.implicits.*
 
 import fs2.Stream
 
-import io.circe._
-import io.circe.syntax._
+import io.circe.*
+import io.circe.syntax.*
 
-import org.http4s._
-import org.http4s.circe._
-import org.http4s.dsl.Http4sDsl
-import org.http4s.headers._
+import org.http4s.*
+import org.http4s.circe.*
+import org.http4s.headers.*
 
-import scala.util.Try
-import org.http4s.HttpRoutes
+import scala.util.*
 
 class Service[A : Decoder : Encoder](segment: String, repository: Repository[IO, A])(using E : HasPID[IO, A])
-  extends Http4sDsl[IO]:
+  extends dsl.Http4sDsl[IO]:
 
   type EndPoint = Kleisli[IO, Request[IO], Response[IO]]
   val  EndPoint = Kleisli
@@ -36,7 +34,7 @@ class Service[A : Decoder : Encoder](segment: String, repository: Repository[IO,
   def create: EndPoint =
     EndPoint(
       req => for {
-        entity   <- req.decodeJson[A].withGeneratedId
+        entity   <- req.decodeJson[A].withGeneratedPID
         result   <- repository.create(entity)
         response <- httpCreatedOr500(entity)(result)
       } yield response
@@ -45,7 +43,7 @@ class Service[A : Decoder : Encoder](segment: String, repository: Repository[IO,
   def update(id: PID): EndPoint =
     EndPoint(
       req => for {
-        entity   <- req.decodeJson[A].withId(id)
+        entity   <- req.decodeJson[A].withPID(id)
         result   <- repository.update(entity)
         response <- httpOkOr404(entity)(result)
       } yield response
@@ -90,7 +88,7 @@ class Service[A : Decoder : Encoder](segment: String, repository: Repository[IO,
       case Left(e)  =>
         InternalServerError(e.toString)
       case _        =>
-        E.id(a).flatMap(id => Created(a.asJson, Location(Uri.unsafeFromString(s"/$segment/${id.get}"))))
+        E.pid(a).flatMap(id => Created(a.asJson, Location(Uri.unsafeFromString(s"/$segment/${id.get}"))))
     }
 
 

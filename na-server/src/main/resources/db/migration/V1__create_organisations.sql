@@ -1,4 +1,4 @@
 CREATE TABLE organisations (
-  id          UUID PRIMARY KEY,
+  pid  UUID PRIMARY KEY,
   name TEXT
 );

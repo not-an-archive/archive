@@ -21,8 +21,8 @@ object Organisation:
   given organisationEntity[F[_]](using F: Monad[F]): HasPID[F, Organisation] =
     new HasPID[F, Organisation]:
 
-      def id(organisation: Organisation): F[Option[PID]] =
+      def pid(organisation: Organisation): F[Option[PID]] =
         F.pure(organisation.pid)
 
-      def withId(organisation: Organisation)(id: PID): F[Organisation] =
-        F.pure(organisation.copy(pid = Some(id)))
+      def withPID(organisation: Organisation)(pid: PID): F[Organisation] =
+        F.pure(organisation.copy(pid = Some(pid)))

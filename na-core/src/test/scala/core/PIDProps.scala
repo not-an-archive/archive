@@ -3,17 +3,16 @@ package core
 
 import org.scalacheck.*
 
-object UUIDProps extends Properties("na.core.UUID"):
+import PID.*
+
+object PIDProps extends Properties("na.core.PID"):
 
   import util.*
   import Prop.*
 
-  import UUID.*
-  import Variant.*
-  import Version.*
-
   property("variant") = forAll { (msb: Long, lsb: Long) =>
-    UUID(msb, lsb).variant match
+    import Variant.*
+    PID(msb, lsb).variant match
       case Reserved                     => lsb.toBinaryString.startsWith("111")
       case MicrosoftBackwardsCompatible => lsb.toBinaryString.startsWith("110")
       case LeachSalz                    => lsb.toBinaryString.startsWith("10")
@@ -21,8 +20,9 @@ object UUIDProps extends Properties("na.core.UUID"):
   }
 
   property("version") = forAll { (msb: Long, lsb: Long) =>
+    import Version.*
     val expected = maskedValue(0x00000000_0000_00F0_00L)
-    UUID(msb, lsb).version match
+    PID(msb, lsb).version match
       case Unused                      =>  expected(msb) == 0x00000000_0000_0000_00L
       case GregorianTimeBased          =>  expected(msb) == 0x00000000_0000_0010_00L
       case DCESecurityBased            =>  expected(msb) == 0x00000000_0000_0020_00L

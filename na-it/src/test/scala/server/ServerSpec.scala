@@ -86,9 +86,9 @@ class ServerSpec
           "name": $name
         }"""
 
-      asyncJsonFrom(PUT(endpoint / pid.uuid).withEntity(updateJson)) shouldBe json"""
+      asyncJsonFrom(PUT(endpoint / pid).withEntity(updateJson)) shouldBe json"""
         {
-          "pid": ${pid.uuid},
+          "pid": ${pid},
           "name": $name
         }"""
   }
@@ -97,9 +97,9 @@ class ServerSpec
       val name = "my organisation 3"
       val pid = createOrganisation(name)
 
-      client.use(_.expect[Json](endpoint / pid.uuid)).unsafeRunSync() shouldBe json"""
+      client.use(_.expect[Json](endpoint / pid)).unsafeRunSync() shouldBe json"""
         {
-          "pid": ${pid.uuid},
+          "pid": ${pid},
           "name": $name
         }"""
   }
@@ -108,15 +108,15 @@ class ServerSpec
       val name = "my organisation 4"
       val pid = createOrganisation(name)
 
-      client.use(_.status(DELETE(endpoint / pid.uuid))).unsafeRunSync() shouldBe Status.NoContent
-      client.use(_.status(GET(endpoint / pid.uuid))).unsafeRunSync()    shouldBe Status.NotFound
+      client.use(_.status(DELETE(endpoint / pid))).unsafeRunSync() shouldBe Status.NoContent
+      client.use(_.status(GET(endpoint / pid))).unsafeRunSync()    shouldBe Status.NotFound
   }
 
   it should "return all organisations" in {
     // Remove all existing organisations
     val json = client.use(_.expect[Json](endpoint)).unsafeRunSync()
     json.hcursor.as[List[Organisation]].foreach(_.foreach(c =>
-      client.use(_.status(DELETE(endpoint / c.pid.get.uuid))).unsafeRunSync() shouldBe Status.NoContent
+      client.use(_.status(DELETE(endpoint / c.pid.get))).unsafeRunSync() shouldBe Status.NoContent
     ))
 
     // Add new organisations

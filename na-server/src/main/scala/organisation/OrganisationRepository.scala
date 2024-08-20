@@ -11,6 +11,8 @@ import na.*
 import core.*
 
 object OrganisationRepository:
+  
+  import PID.*
 
   def apply(transactor: Transactor[IO]): Repository[IO, Organisation] =
     new Repository[IO, Organisation]("organisations"):
@@ -95,6 +97,5 @@ object OrganisationRepository:
       private def expectUpdate(pid: PID)(rowCount: Int): Result[Unit] =
         expectUpdate(Some(pid))(rowCount)
 
-  given uuidMeta: Meta[UUID] =
-    import UUID.compat.*
-    doobie.h2.implicits.UuidType.imap(_.asScalaUUID)(_.asJavaUUID)
+  given uuidMeta: Meta[PID] =
+    doobie.h2.implicits.UuidType.imap(_.toPID)(_.toUUID)

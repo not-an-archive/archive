@@ -1,15 +1,18 @@
 package organisation
 
-import java.util.UUID
 import cats.implicits.*
 import cats.effect.*
 import fs2.*
 import doobie.Meta
 import doobie.implicits.*
 import doobie.util.transactor.*
+
 import na.*
+import core.*
 
 object OrganisationRepository:
+  
+  import PID.*
 
   def apply(transactor: Transactor[IO]): Repository[IO, Organisation] =
     new Repository[IO, Organisation]("organisations"):
@@ -17,7 +20,7 @@ object OrganisationRepository:
       def stream: Stream[IO, Organisation] =
         sql"""
           SELECT
-            id,
+            pid,
             name
           FROM
             organisations
@@ -29,47 +32,47 @@ object OrganisationRepository:
       def create(organisation: Organisation): IO[Result[Unit]] =
         sql"""
           INSERT INTO organisations (
-              id,
+              pid,
               name
           )
           VALUES (
-            ${organisation.id},
+            ${organisation.pid},
             ${organisation.name}
           )
         """
         .update
         .run
         .transact(transactor)
-        .map(expectUpdate(organisation.id))
+        .map(expectUpdate(organisation.pid))
 
-      def read(id: Identity): IO[Result[Organisation]] =
+      def read(pid: PID): IO[Result[Organisation]] =
         sql"""
           SELECT
-            id,
+            pid,
             name
           FROM
             organisations
           WHERE
-            id = $id
+            pid = $pid
         """
         .query[Organisation]
         .option
         .transact(transactor)
         .map:
           case Some(organisation) => Right(organisation)
-          case None => Left(NotFoundError(name, id))
+          case None => Left(NotFoundError(name, pid))
 
-      def delete(id: Identity): IO[Result[Unit]] =
+      def delete(pid: PID): IO[Result[Unit]] =
         sql"""
           DELETE FROM
             organisations
           WHERE
-            id = $id
+            pid = $pid
         """
         .update
         .run
         .transact(transactor)
-        .map(expectUpdate(id))
+        .map(expectUpdate(pid))
 
       def update(organisation: Organisation): IO[Result[Unit]] =
         sql"""
@@ -78,21 +81,21 @@ object OrganisationRepository:
           SET
             name = ${organisation.name}
           WHERE
-            id = ${organisation.id}
+            pid = ${organisation.pid}
         """
         .update
         .run
         .transact(transactor)
-        .map(expectUpdate(organisation.id))
+        .map(expectUpdate(organisation.pid))
 
-      private def expectUpdate(id: Option[Identity])(rowCount: Int): Result[Unit] =
-        id match
-          case None                      => Left(NoIdentityError(name))
-          case Some(id) if rowCount == 0 => Left(UpdateError(name, id))
-          case _                         => Right(())
+      private def expectUpdate(pid: Option[PID])(rowCount: Int): Result[Unit] =
+        pid match
+          case None                       => Left(NoPIDError(name))
+          case Some(pid) if rowCount == 0 => Left(UpdateError(name, pid))
+          case _                          => Right(())
 
-      private def expectUpdate(id: Identity)(rowCount: Int): Result[Unit] =
-        expectUpdate(Some(id))(rowCount)
+      private def expectUpdate(pid: PID)(rowCount: Int): Result[Unit] =
+        expectUpdate(Some(pid))(rowCount)
 
-  given uuidMeta: Meta[UUID] =
-    doobie.h2.implicits.UuidType
+  given uuidMeta: Meta[PID] =
+    doobie.h2.implicits.UuidType.imap(_.toPID)(_.toUUID)

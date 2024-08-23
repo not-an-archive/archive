@@ -1,35 +1,29 @@
 package na
 
 import cats.*
+import core.*
 
-type Identity = java.util.UUID
+trait HasPID[F[_], A]:
 
-object Identity:
+  import PID.*
+  import Born.*
+  import Copy.*
 
-  def apply(s: String): Identity =
-    java.util.UUID.fromString(s)
+  def pid(a: A): F[Option[PID]]
 
-  val generate: () => Identity =
-    () => java.util.UUID.randomUUID
+  def withPID(a: A)(id: PID): F[A]
 
-
-trait HasIdentity[F[_], A]:
-
-  def id(a: A): F[Option[Identity]]
-
-  def withId(a: A)(id: Identity): F[A]
-
-  def withGeneratedId(a: A): F[A] =
-    withId(a)(Identity.generate())
+  def withGeneratedPID(a: A): F[A] =
+    withPID(a)(PID.random(born = Digitally, copy = External))
 
 
-extension [F[_], A](fa: F[A])(using  F: FlatMap[F], E : HasIdentity[F, A])
+extension [F[_], A](fa: F[A])(using  F: FlatMap[F], E : HasPID[F, A])
 
-  def id: F[Option[Identity]] =
-    F.flatMap(fa)(E.id)
+  def pid: F[Option[PID]] =
+    F.flatMap(fa)(E.pid)
 
-  def withId(id: Identity): F[A] =
-    F.flatMap(fa)(E.withId(_)(id))
+  def withPID(id: PID): F[A] =
+    F.flatMap(fa)(E.withPID(_)(id))
 
-  def withGeneratedId: F[A] =
-    F.flatMap(fa)(E.withGeneratedId)
+  def withPID: F[A] =
+    F.flatMap(fa)(E.withGeneratedPID)

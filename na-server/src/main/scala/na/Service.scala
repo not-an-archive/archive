@@ -1,58 +1,58 @@
 package na
 
-import cats.effect._
-import cats.data._
-import cats.implicits._
+import core.*
+
+import cats.effect.*
+import cats.data.*
+import cats.implicits.*
 
 import fs2.Stream
 
-import io.circe._
-import io.circe.syntax._
+import io.circe.*
+import io.circe.syntax.*
 
-import org.http4s._
-import org.http4s.circe._
-import org.http4s.dsl.Http4sDsl
-import org.http4s.headers._
+import org.http4s.*
+import org.http4s.circe.*
+import org.http4s.headers.*
 
-import scala.util.Try
-import org.http4s.HttpRoutes
+import scala.util.*
 
-class Service[A : Decoder : Encoder](segment: String, repository: Repository[IO, A])(using E : HasIdentity[IO, A])
-  extends Http4sDsl[IO]:
+class Service[A : Decoder : Encoder](segment: String, repository: Repository[IO, A])(using E : HasPID[IO, A])
+  extends dsl.Http4sDsl[IO]:
 
   type EndPoint = Kleisli[IO, Request[IO], Response[IO]]
   val  EndPoint = Kleisli
 
   def http = HttpRoutes.of[IO] {
-    case req @ POST    -> Root / `segment`                    =>  create(req)
-    case req @ PUT     -> Root / `segment` / IdentityVar(id)  =>  update(id)(req)
-    case req @ GET     -> Root / `segment` / IdentityVar(id)  =>  read(id)(req)
-    case req @ DELETE  -> Root / `segment` / IdentityVar(id)  =>  delete(id)(req)
-    case req @ GET     -> Root / `segment`                    =>  stream(req)
+    case req @ POST    -> Root / `segment`               =>  create(req)
+    case req @ PUT     -> Root / `segment` / PIDVar(id)  =>  update(id)(req)
+    case req @ GET     -> Root / `segment` / PIDVar(id)  =>  read(id)(req)
+    case req @ DELETE  -> Root / `segment` / PIDVar(id)  =>  delete(id)(req)
+    case req @ GET     -> Root / `segment`               =>  stream(req)
   }
 
   def create: EndPoint =
     EndPoint(
       req => for {
-        entity   <- req.decodeJson[A].withGeneratedId
+        entity   <- req.decodeJson[A].withPID
         result   <- repository.create(entity)
         response <- httpCreatedOr500(entity)(result)
       } yield response
     )
 
-  def update(id: Identity): EndPoint =
+  def update(id: PID): EndPoint =
     EndPoint(
       req => for {
-        entity   <- req.decodeJson[A].withId(id)
+        entity   <- req.decodeJson[A].withPID(id)
         result   <- repository.update(entity)
         response <- httpOkOr404(entity)(result)
       } yield response
     )
 
-  def read(id: Identity): EndPoint =
+  def read(id: PID): EndPoint =
     EndPoint(_ => repository.read(id).flatMap(httpOkOr404))
 
-  def delete(id: Identity): EndPoint =
+  def delete(id: PID): EndPoint =
     EndPoint(
       _  => repository.delete(id).flatMap {
         case Left(NotFoundError(_, _)) => NotFound()
@@ -88,11 +88,11 @@ class Service[A : Decoder : Encoder](segment: String, repository: Repository[IO,
       case Left(e)  =>
         InternalServerError(e.toString)
       case _        =>
-        E.id(a).flatMap(id => Created(a.asJson, Location(Uri.unsafeFromString(s"/$segment/${id.get}"))))
+        E.pid(a).flatMap(id => Created(a.asJson, Location(Uri.unsafeFromString(s"/$segment/${id.get}"))))
     }
 
 
-object IdentityVar extends PathVar(Identity.apply)
+object PIDVar extends PathVar(PID.fromString)
 
 protected class PathVar[A](cast: String => A):
   def unapply(str: String): Option[A] =

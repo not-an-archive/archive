@@ -15,6 +15,7 @@ object Dependencies {
 
   /** Test dependencies */
   val ScalaTestVersion     = "3.2.19"
+  val ScalaCheckVersion    = "1.18.0"
   val H2Version            = "2.3.232"
   val FlywayVersion        = "10.17.2"
   val CatsEffectTestKit    = "1.5.0"
@@ -37,6 +38,7 @@ object Dependencies {
 
   val testDependencies = Seq(
     "org.scalatest"         %% "scalatest"                      % ScalaTestVersion,
+    "org.scalacheck"        %% "scalacheck"                     % ScalaCheckVersion,
     "org.http4s"            %% "http4s-ember-client"            % Http4sVersion,
     "com.h2database"        %  "h2"                             % H2Version,
     "io.circe"              %% "circe-literal"                  % CirceVersion,

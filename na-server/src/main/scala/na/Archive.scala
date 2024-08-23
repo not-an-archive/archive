@@ -1,10 +1,13 @@
 package na
 
 import scala.concurrent.*
+
 import cats.effect.*
+
 import doobie.*
 import doobie.util.log.LogEvent
 import doobie.hikari.HikariTransactor
+
 import org.flywaydb.core.*
 
 object Archive:

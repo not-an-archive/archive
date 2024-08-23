@@ -25,5 +25,5 @@ extension [F[_], A](fa: F[A])(using  F: FlatMap[F], E : HasPID[F, A])
   def withPID(id: PID): F[A] =
     F.flatMap(fa)(E.withPID(_)(id))
 
-  def withGeneratedPID: F[A] =
+  def withPID: F[A] =
     F.flatMap(fa)(E.withGeneratedPID)

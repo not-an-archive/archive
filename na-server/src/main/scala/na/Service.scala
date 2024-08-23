@@ -34,7 +34,7 @@ class Service[A : Decoder : Encoder](segment: String, repository: Repository[IO,
   def create: EndPoint =
     EndPoint(
       req => for {
-        entity   <- req.decodeJson[A].withGeneratedPID
+        entity   <- req.decodeJson[A].withPID
         result   <- repository.create(entity)
         response <- httpCreatedOr500(entity)(result)
       } yield response

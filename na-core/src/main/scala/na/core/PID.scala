@@ -78,8 +78,11 @@ case class PID(msb: Long, lsb: Long):
   private def extractor(bits: Long)(v: Embedded): Boolean =
     v.value == (bits & v.mask)
 
-  def set(value: Embedded): PID =
-    copy(msb = (msb & ~value.mask) | (value.value & value.mask))
+  def embed(value: Embedded, significant: Boolean = true): PID =
+    if significant then
+      copy(msb = (msb & ~value.mask) | (value.value & value.mask))
+    else
+      copy(lsb = (lsb & ~value.mask) | (value.value & value.mask))
 
   override def toString: String =
     UUID(msb, lsb).toString
@@ -94,9 +97,9 @@ object PID:
     UUID
       .randomUUID
       .toPID
-      .set(Version.CustomFormatBased)
-      .set(born)
-      .set(copy)
+      .embed(Version.CustomFormatBased)
+      .embed(born)
+      .embed(copy)
 
   abstract class Embedded(val mask: Long):
     val value: Long

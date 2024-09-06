@@ -1,4 +1,4 @@
-package org
+package na
 
 import org.scalatest.*
 import org.scalatest.concurrent.*

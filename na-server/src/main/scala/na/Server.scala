@@ -20,7 +20,7 @@ object Server extends IOApp:
 
   case class Environment(transactor: HikariTransactor[IO], config: Config)
 
-  private def environment: Resource[IO, Environment] =
+  def environment: Resource[IO, Environment] =
     for {
       config <- Config.load
       ec <- ExecutionContexts.fixedThreadPool[IO](config.database.threadPoolSize)

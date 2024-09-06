@@ -9,9 +9,6 @@ case class PID(msb: Long, lsb: Long):
 
   import PID.*
 
-//  assert(variant == Variant.LeachSalz, "No archive compliant uuid variant: LeachSalz)")
-//  assert(version == Version.CustomFormatBased, "no archive compliant uuid version: CustomFormatBased")
-//
   /**
    * The variant field determines the overall layout of the UUID.  That is, the interpretation of all other bits in the
    * UUID depends on the setting of the bits in the variant field.  As such, it could more accurately be called a type
@@ -128,10 +125,12 @@ object PID:
     case Version14                   extends Version(0x00000000_0000_E000L)
     case Version15                   extends Version(0x00000000_0000_F000L)
 
+  /** An ordinal persisted enumeration of whether the PID's information is either born digitally or physically */
   enum Born(override val value: Long) extends Embedded(0x0000_000000000001L):
     case Digitally  extends Born(value = 0x0000_000000000000L)
     case Physically extends Born(value = 0x0000_000000000001L)
 
+  /** An ordinal persisted enumeration of whether the PID's information is known externally or copied internally. */
   enum Copy(override val value: Long) extends Embedded(0x0000_000000000006L):
     case External   extends Copy(0x0000_000000000000L)
     case Internal1  extends Copy(0x0000_000000000002L)
@@ -162,3 +161,6 @@ object PID:
 
   extension (uuid: UUID) def toPID: PID =
     PID(uuid.getMostSignificantBits, uuid.getLeastSignificantBits)
+    
+  extension (pid: PID) def asExternal: PID =
+    pid.embed(Copy.External)

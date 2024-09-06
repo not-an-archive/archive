@@ -18,7 +18,7 @@ import na.*
 import core.*
 import organisation.*
 
-class ServerSpec
+class OrganisationServiceSpec
   extends AsyncFlatSpec
   with Checkpoints
   with Matchers

@@ -29,8 +29,12 @@ object Archive:
   def initialize(transactor: HikariTransactor[IO]): IO[Unit] =
     transactor.configure: datasource =>
       IO.delay:
-        Flyway
-          .configure()
-          .dataSource(datasource)
-          .load()
-          .migrate()
+        import scala.util.*
+        Try(
+          Flyway
+            .configure()
+            .dataSource(datasource)
+            .load()
+            .migrate()) match
+          case Success(r) => println(s"Database initialized: ${r.success}")
+          case Failure(e) => e.printStackTrace() ; throw e

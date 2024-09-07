@@ -52,7 +52,7 @@ object PIDStore extends PIDStore:
       Registration(copies)
 
   given Meta[UUID] =
-    doobie.h2.implicits.UuidType // H2 dependency ???
+    doobie.h2.implicits.UuidType // TODO H2 dependency ???
 
   given Meta[Born] =
     Meta.IntMeta.imap(Born.fromOrdinal)(_.ordinal)

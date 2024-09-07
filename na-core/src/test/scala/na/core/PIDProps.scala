@@ -42,22 +42,42 @@ object PIDProps extends Properties("na.core.PID"):
         case Version15                   =>  expected(msb) == 0x00000000_0000_F000L
 
   property("born") =
+    import Born.*
     forAll: (msb: Long, lsb: Long) =>
-      import Born.*
       val expected = maskedValue(0x0000_000000000001L)
       PID(msb, lsb).born match
         case Digitally  => expected(lsb) == 0x0000_000000000000L
         case Physically => expected(lsb) == 0x0000_000000000001L
 
   property("copy") =
+    import Copy.*
     forAll: (msb: Long, lsb: Long) =>
-      import Copy.*
       val expected = maskedValue(0x0000_000000000006L)
       PID(msb, lsb).copy match
         case External  => expected(lsb) == 0x0000_000000000000L
         case Internal1 => expected(lsb) == 0x0000_000000000002L
         case Internal2 => expected(lsb) == 0x0000_000000000004L
         case Internal3 => expected(lsb) == 0x0000_000000000006L
+
+  property("Born.fromOrdinal") =
+    import scala.util.*
+    import Born.*
+    forAll: (ordinal: Int) =>
+      ordinal match
+        case 0 => Try(Born.fromOrdinal(ordinal)).get == Digitally
+        case 1 => Try(Born.fromOrdinal(ordinal)).get == Physically
+        case _ => Try(Born.fromOrdinal(ordinal)).isFailure
+
+  property("Copy.fromOrdinal") =
+    import scala.util.*
+    import Copy.*
+    forAll: (ordinal: Int) =>
+      ordinal match
+        case 0 => Try(Copy.fromOrdinal(ordinal)).get == External
+        case 1 => Try(Copy.fromOrdinal(ordinal)).get == Internal1
+        case 2 => Try(Copy.fromOrdinal(ordinal)).get == Internal2
+        case 3 => Try(Copy.fromOrdinal(ordinal)).get == Internal3
+        case _ => Try(Copy.fromOrdinal(ordinal)).isFailure
 
   private def maskedValue(m: Long)(v: Long): Long =
     v & m

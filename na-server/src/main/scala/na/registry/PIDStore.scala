@@ -15,7 +15,7 @@ abstract class PIDStore:
 
   /** creates given _external_ PID */
   def create(pid: PID): ConnectionIO[Int]
-  /** has given _external_ PID */
+  /** get registration for given _external_ PID */
   def get(pid: PID): ConnectionIO[Registration]
   /** streams all _external_ PIDs */
   def streamExt: Stream[ConnectionIO,PID]
@@ -110,7 +110,6 @@ object PIDStore extends PIDStore:
     """
       .query[PID]
       .stream
-
 
   def streamAll: Stream[ConnectionIO,PID] =
     sql"""

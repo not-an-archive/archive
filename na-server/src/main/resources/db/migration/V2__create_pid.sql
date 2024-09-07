@@ -9,6 +9,6 @@ CREATE TABLE pid (
   UNIQUE (ext_msb, ext_lsb)
 );
 
-CREATE INDEX idx_pid_ext_msb  ON pid (ext_msb);
-CREATE INDEX idx_pid_born     ON pid (born);
-CREATE INDEX idx_pid_copy     ON pid (copy);
+CREATE INDEX idx_pid_ext  ON pid (ext_msb, ext_lsb);
+CREATE INDEX idx_pid_born ON pid (born);
+CREATE INDEX idx_pid_copy ON pid (copy);

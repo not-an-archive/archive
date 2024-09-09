@@ -31,25 +31,14 @@ object PIDStore extends PIDStore:
   import PID.*
   import Copy.*
 
-  case class Registration(copies: Map[Copy,PID]):
+  case class RegistrationRow(uuid: UUID, externalMsb: Long, externalLsb: Long, born: Born, copy: Copy):
+    lazy val externalPID: PID = PID(externalMsb, externalLsb)
+    lazy val internalPID: PID = uuid.toPID
 
-    lazy val externalPID: PID =
-      copies.getOrElse(External, sys.error("no external copy"))
+  def fromRows(rows: NonEmptyList[RegistrationRow]): Registration =
+    val copies = rows.foldLeft(Map.empty[Copy, PID])((acc, row) => acc + (row.copy -> row.uuid.toPID))
+    Registration(copies)
 
-    lazy val internalPIDs: List[PID] =
-      import cats.implicits.*
-      List(copies.get(Internal1), copies.get(Internal2), copies.get(Internal3)).sequence.getOrElse(List.empty[PID])
-
-
-  object Registration:
-
-    case class RegistrationRow(uuid: UUID, externalMsb: Long, externalLsb: Long, born: Born, copy: Copy):
-      lazy val externalPID: PID = PID(externalMsb, externalLsb)
-      lazy val internalPID: PID = uuid.toPID
-
-    def fromRows(rows: NonEmptyList[RegistrationRow]): Registration =
-      val copies = rows.foldLeft(Map.empty[Copy,PID])((acc, row) => acc + (row.copy -> row.uuid.toPID))
-      Registration(copies)
 
   given Meta[UUID] =
     doobie.h2.implicits.UuidType // TODO H2 dependency ???
@@ -95,9 +84,9 @@ object PIDStore extends PIDStore:
         ext_msb = ${pid.msb} AND
         ext_lsb = ${pid.lsb}
     """
-      .query[Registration.RegistrationRow]
+      .query[RegistrationRow]
       .nel
-      .map(Registration.fromRows)
+      .map(fromRows)
 
 
   def streamExt: Stream[ConnectionIO,PID] =

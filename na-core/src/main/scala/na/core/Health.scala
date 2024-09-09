@@ -2,15 +2,15 @@ package na
 package core
 
 enum Health:
-  case Green
-  case Yellow
   case Red
+  case Yellow
+  case Green
 
 object Health:
 
   import cats.Monoid
 
-  /** safety first i.e. escalating combining; note that this requires empty health to be green */
+  /** Safety first, i.e. combines escalating towards Red. */
   given Monoid[Health] =
     Monoid.instance(
       emptyValue = Green,

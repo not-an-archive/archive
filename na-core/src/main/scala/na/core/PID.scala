@@ -75,7 +75,7 @@ case class PID(msb: Long, lsb: Long):
   private def extractor(bits: Long)(v: Embedded): Boolean =
     v.value == (bits & v.mask)
 
-  def embed(value: Embedded, significant: Boolean = true): PID =
+  def embed(value: Embedded, significant: Boolean): PID =
     if significant then
       copy(msb = (msb & ~value.mask) | (value.value & value.mask))
     else
@@ -94,9 +94,9 @@ object PID:
     UUID
       .randomUUID
       .toPID
-      .embed(Version.CustomFormatBased)
-      .embed(born)
-      .embed(copy)
+      .embed(Version.CustomFormatBased, significant = true)
+      .embed(born, significant = false)
+      .embed(copy, significant = false)
 
   abstract class Embedded(val mask: Long):
     val value: Long
@@ -163,4 +163,4 @@ object PID:
     PID(uuid.getMostSignificantBits, uuid.getLeastSignificantBits)
     
   extension (pid: PID) def asExternal: PID =
-    pid.embed(Copy.External)
+    pid.embed(Copy.External, significant = false)

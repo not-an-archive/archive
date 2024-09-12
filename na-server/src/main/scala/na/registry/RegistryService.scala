@@ -5,7 +5,6 @@ import core.*
 
 import cats.effect.*
 import cats.data.*
-import cats.implicits.*
 
 import fs2.Stream
 
@@ -13,7 +12,6 @@ import io.circe.*
 import io.circe.syntax.*
 
 import org.http4s.*
-import org.http4s.circe.*
 import org.http4s.headers.*
 
 import scala.util.*

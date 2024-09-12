@@ -22,8 +22,8 @@ object Server extends IOApp:
 
   def environment: Resource[IO, Environment] =
     for {
-      config <- Config.load
-      ec <- ExecutionContexts.fixedThreadPool[IO](config.database.threadPoolSize)
+      config     <- Config.load
+      ec         <- ExecutionContexts.fixedThreadPool[IO](config.database.threadPoolSize)
       transactor <- Archive.transactor(config.database, ec)
     } yield Environment(transactor, config)
 

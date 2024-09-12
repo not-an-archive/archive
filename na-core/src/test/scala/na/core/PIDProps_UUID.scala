@@ -3,7 +3,7 @@ package core
 
 import org.scalacheck.*
 
-object PIDProps_UUID extends Properties("na.core.PID <=> java.util.UUID"):
+object PIDProps_UUID extends Properties("na.core.PID.UUID"):
 
   import java.util.*
 

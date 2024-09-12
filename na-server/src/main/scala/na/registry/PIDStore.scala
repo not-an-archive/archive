@@ -11,7 +11,6 @@ import core.*
 abstract class PIDStore:
 
   import doobie.*
-  import PIDStore.*
 
   /** creates given _external_ PID */
   def create(pid: PID): ConnectionIO[Int]

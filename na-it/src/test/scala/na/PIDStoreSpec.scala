@@ -34,15 +34,7 @@ class PIDStoreSpec
     for {
       config     <- Config.load
       ec         <- ExecutionContexts.fixedThreadPool[IO](config.database.threadPoolSize)
-      transactor <- HikariTransactor
-                      .newHikariTransactor[IO](
-                        driverClassName = config.database.driver,
-                        url             = config.database.url,
-                        user            = config.database.user,
-                        pass            = config.database.password,
-                        connectEC       = ec,
-                        logHandler      = None
-                      )
+      transactor <- Archive.transactor(config.database, ec)
     } yield transactor
 
   val store: PIDStore = PIDStore
@@ -54,12 +46,11 @@ class PIDStoreSpec
     eventually:
       val ext = PID.random(Digitally, External)
       transactor
-        .use:
-          (store.create(ext) *> store.get(ext)).transact
+        .use((store.create(ext) *> store.get(ext)).transact)
         .unsafeRunSync()
         .externalPID == ext
     println("PIDStore started")
 
-  "PIDStore" should "startup within 10 second" in {
+  "PIDStore" should "create an external pid" in {
     assert(true)
   }

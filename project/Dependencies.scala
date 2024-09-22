@@ -8,6 +8,8 @@ object Dependencies {
 
   /** Platform dependencies */
   val Http4sVersion        = "0.23.28"
+  val Fs2Version           = "3.11.0"
+  val JLineVersion         = "3.26.1"
   val DoobieVersion        = "1.0.0-RC5"
   val CirceVersion         = "0.14.10"
   val PureConfigVersion    = "0.17.7"
@@ -27,6 +29,8 @@ object Dependencies {
     "org.http4s"            %% "http4s-ember-server"  % Http4sVersion,
     "org.http4s"            %% "http4s-circe"         % Http4sVersion,
     "org.http4s"            %% "http4s-dsl"           % Http4sVersion,
+    "co.fs2"                %% "fs2-scodec"           % Fs2Version,
+    "org.jline"             %  "jline"                % JLineVersion,
     "org.tpolecat"          %% "doobie-core"          % DoobieVersion,
     "org.tpolecat"          %% "doobie-h2"            % DoobieVersion,
     "org.tpolecat"          %% "doobie-hikari"        % DoobieVersion,

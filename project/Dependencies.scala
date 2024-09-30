@@ -4,20 +4,20 @@ import sbt.*
 object Dependencies {
 
   /** Language dependencies */
-  val ScalaLanguageVersion = "3.5.0"
+  val ScalaLanguageVersion = "3.5.1"
 
   /** Platform dependencies */
-  val Http4sVersion        = "0.23.27"
+  val Http4sVersion        = "0.23.28"
   val DoobieVersion        = "1.0.0-RC5"
-  val CirceVersion         = "0.14.9"
+  val CirceVersion         = "0.14.10"
   val PureConfigVersion    = "0.17.7"
-  val LogbackVersion       = "1.5.7"
+  val LogbackVersion       = "1.5.8"
 
   /** Test dependencies */
   val ScalaTestVersion     = "3.2.19"
-  val ScalaCheckVersion    = "1.18.0"
+  val ScalaCheckVersion    = "1.18.1"
   val H2Version            = "2.3.232"
-  val FlywayVersion        = "10.17.2"
+  val FlywayVersion        = "10.18.2"
   val CatsEffectTestKit    = "1.5.0"
 
   /** Build dependencies */

@@ -23,8 +23,8 @@ object Server extends IOApp:
   def environment: Resource[IO, Environment] =
     for {
       config     <- Config.load
-      ec         <- ExecutionContexts.fixedThreadPool[IO](config.database.threadPoolSize)
-      transactor <- Archive.transactor(config.database, ec)
+      dbec       <- ExecutionContexts.fixedThreadPool[IO](config.database.threadPoolSize)
+      transactor <- Archive.transactor(config.database, dbec)
     } yield Environment(transactor, config)
 
   def create: IO[ExitCode] =
@@ -52,6 +52,7 @@ object Server extends IOApp:
     } yield exitCode
 
   def run(args: List[String]): IO[ExitCode] =
+    println(s"args=${args.foreach(println)}")
     create
 
   private def errorHandler(t: Throwable, msg: => String) : OptionT[IO, Unit] =

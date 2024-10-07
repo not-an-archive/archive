@@ -10,70 +10,52 @@ import java.net.ConnectException
 import scala.concurrent.duration.*
 
 object Client:
-  def start[F[_]: Temporal: Network: Console](
-                                               address: SocketAddress[IpAddress],
-                                               desiredUsername: Username
-                                             ): Stream[F, Unit] =
-    connect(address, desiredUsername).handleErrorWith {
-      case _: ConnectException =>
-        val retryDelay = 5.seconds
-        Stream.exec(Console[F].errorln(s"Failed to connect. Retrying in $retryDelay.")) ++
-          start(address, desiredUsername)
-            .delayBy(retryDelay)
-      case _: UserQuit => Stream.empty
-      case t           => Stream.raiseError(t)
-    }
 
-  private def connect[F[_]: Concurrent: Network: Console](
-                                                           address: SocketAddress[IpAddress],
-                                                           desiredUsername: Username
-                                                         ): Stream[F, Unit] =
-    Stream.exec(Console[F].info(s"Connecting to server $address")) ++
+  import Protocol.*
+
+  private val connectRetry = 1.second
+
+  def start[F[_]:Temporal:Network:Console](address: SocketAddress[IpAddress]): Stream[F,Unit] =
+    connect(address)
+      .handleErrorWith:
+        case _ : ConnectException =>
+          val log     = Stream.exec(Console[F].errorln(s"Failed to connect. Retrying in $connectRetry."))
+          val request = start(address).delayBy(connectRetry)
+          log ++ request
+        case _ : UserQuit =>
+          Stream.empty
+        case t =>
+          Stream.raiseError(t)
+
+  private def connect[F[_]:Temporal:Concurrent:Network:Console](address: SocketAddress[IpAddress]): Stream[F,Unit] =
+    val log =
+      Stream.exec(Console[F].info(s"Connecting to server $address"))
+
+    val request =
       Stream
         .resource(Network[F].client(address))
-        .flatMap { socket =>
-          Stream.exec(Console[F].info("🎉 Connected! 🎊")) ++
+        .flatMap: socket =>
+          val log =
+            Stream.exec(Console[F].info("🎉 Connected! 🎊"))
+
+          val process =
             Stream
-              .eval(
-                MessageSocket(
-                  socket,
-                  Protocol.ServerCommand.codec,
-                  Protocol.ClientCommand.codec,
-                  128
-                )
-              )
-              .flatMap { messageSocket =>
-                Stream.exec(
-                  messageSocket.write1(Protocol.ClientCommand.RequestUsername(desiredUsername))
-                ) ++
-                  processIncoming(messageSocket).concurrently(
-                    processOutgoing(messageSocket)
-                  )
-              }
-        }
+              .eval(MessageSocket(socket, ServerCommand.codec, ClientCommand.codec, 128))
+              .flatMap(messageSocket => inbound(messageSocket).concurrently(outbound(messageSocket)))
 
-  private def processIncoming[F[_]: Console](
-                                              messageSocket: MessageSocket[F, Protocol.ServerCommand, Protocol.ClientCommand]
-                                            )(implicit F: ApplicativeError[F, Throwable]): Stream[F, Unit] =
-    messageSocket.read.evalMap {
-      case Protocol.ServerCommand.Alert(txt) =>
-        Console[F].alert(txt)
-      case Protocol.ServerCommand.Message(username, txt) =>
-        Console[F].println(s"$username> $txt")
-      case Protocol.ServerCommand.SetUsername(username) =>
-        Console[F].alert("Assigned username: " + username)
-      case Protocol.ServerCommand.Disconnect =>
-        F.raiseError[Unit](new UserQuit)
-    }
+          log ++ process
+    log ++ request
 
-  private def processOutgoing[F[_]: RaiseThrowable: Console](
-                                                              messageSocket: MessageSocket[F, Protocol.ServerCommand, Protocol.ClientCommand]
-                                                            ): Stream[F, Unit] =
+  private def inbound[F[_]:Console](messageSocket: MessageSocket[F,ServerCommand,ClientCommand])(implicit F: ApplicativeError[F, Throwable]): Stream[F, Unit] =
+    messageSocket
+      .read
+      .evalMap:
+        case Protocol.ServerCommand.Tock =>
+          Console[F].println(s"inbound client: tock [${System.nanoTime}]")
+
+  private def outbound[F[_]:Temporal:RaiseThrowable:Console](messageSocket: MessageSocket[F,ServerCommand,ClientCommand]): Stream[F, Unit] =
     Stream
-      .repeatEval(Console[F].readLine("> "))
-      .flatMap {
-        case Some(txt) => Stream(txt)
-        case None      => Stream.raiseError[F](new UserQuit)
-      }
-      .map(txt => Protocol.ClientCommand.SendMessage(txt))
+      .fixedRate(1.second)
+      .evalMap(_ => Console[F].println(s"outbound client: tick [${System.nanoTime}]"))
+      .map(_ => ClientCommand.Tick(System.nanoTime))
       .evalMap(messageSocket.write1)

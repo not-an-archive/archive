@@ -32,6 +32,7 @@ object Dependencies {
     "org.tpolecat"          %% "doobie-hikari"        % DoobieVersion,
     "org.flywaydb"          %  "flyway-core"          % FlywayVersion,
     "io.circe"              %% "circe-generic"        % CirceVersion,
+    "io.circe"              %% "circe-parser"         % CirceVersion,
     "com.github.pureconfig" %% "pureconfig-core"      % PureConfigVersion,
     "ch.qos.logback"        %  "logback-classic"      % LogbackVersion,
   )

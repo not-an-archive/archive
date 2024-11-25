@@ -2,7 +2,7 @@
   "authors": [
     {
       "github": "nmcb",
-      "team":   "#archief",
+      "team":   "#standard-for-public-code",
       "name":   "Marco Borst",
       "status": "active",
       "credit": {
@@ -15,15 +15,15 @@
         "Sun": 0
       },
       "debit": {
-        "Mon": 8,
-        "Tue": 8,
-        "Wed": 8,
-        "Thu": 8,
-        "Fri": 8,
+        "Mon": 4,
+        "Tue": 4,
+        "Wed": 4,
+        "Thu": 4,
+        "Fri": 4,
         "Sat": 0,
         "Sun": 0
       },
-      "fee": "5300/month"
+      "fee": "7200/month"
     }
   ]
 }

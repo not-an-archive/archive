@@ -6,7 +6,7 @@ case class Week(mon: Int, tue: Int, wed: Int, thu: Int, fri: Int, sat: Int, sun:
   import java.time.*
   import DayOfWeek.*
 
-  def getHoursByDate(day: Day): Int =
+  def getHoursFor(day: Day): Int =
     day.asLocalDate.getDayOfWeek match
       case MONDAY    => mon
       case TUESDAY   => tue
@@ -18,9 +18,9 @@ case class Week(mon: Int, tue: Int, wed: Int, thu: Int, fri: Int, sat: Int, sun:
 
 object Week:
 
-  def validated(mon: Int, tue: Int, wed: Int, thu: Int, fri: Int, sat: Int, sun: Int): Either[String ,Week] =
-    if List(mon, tue, wed, thu, fri, sat, sun).forall(v => v >= 0 && v <= 24) then
-      Right(Week(mon, tue, wed, thu, fri, sat, sun))
+  def validated(w: Week): Either[String ,Week] =
+    if List(w.mon, w.tue, w.wed, w.thu, w.fri, w.sat, w.sun).forall(v => v >= 0 && v <= 24) then
+      Right(Week(w.mon, w.tue, w.wed, w.thu, w.fri, w.sat, w.sun))
     else
       Left(s"hours not in range [0,24]")
 
@@ -31,4 +31,4 @@ object Week:
     deriveEncoder[Week]
 
   given Decoder[Week] =
-    deriveDecoder[Week]
+    deriveDecoder[Week].emap(validated)

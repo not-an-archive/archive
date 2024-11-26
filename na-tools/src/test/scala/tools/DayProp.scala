@@ -3,7 +3,7 @@ package tools
 
 import org.scalacheck.*
 
-object DayProp extends Properties("tools.Day") :
+object DayProp extends Properties("na.tools.Day") :
 
   val genDay: Gen[Day] =
     for {

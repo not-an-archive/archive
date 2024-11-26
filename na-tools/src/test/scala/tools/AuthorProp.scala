@@ -3,7 +3,7 @@ package tools
 
 import org.scalacheck.*
 
-object AuthorProp extends Properties("tools.Author"):
+object AuthorProp extends Properties("na.tools.Author"):
 
   import AuthorStatusProp.*
   import DayProp.*
@@ -53,7 +53,7 @@ object AuthorProp extends Properties("tools.Author"):
   def calculatesHoursFrom(expected: Author => Week, actual: Author => Day => AuthorStatus => Int) =
     forAll(genDay, genAuthor, genAuthorStatus) { (day: Day, author: Author, status: AuthorStatus) =>
       if author.status == status then
-        expected(author).getHoursByDate(day) == actual(author)(day)(status)
+        expected(author).getHoursFor(day) == actual(author)(day)(status)
       else
         actual(author)(day)(status) == 0
     }

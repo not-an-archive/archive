@@ -3,7 +3,7 @@ package tools
 
 import org.scalacheck.*
 
-object FeeProp extends Properties("tools.Fee"):
+object FeeProp extends Properties("na.tools.Fee"):
 
   import Gen.*
   import Prop.*
@@ -43,7 +43,7 @@ object FeeProp extends Properties("tools.Fee"):
 
   import io.circe.syntax.*
 
-  property("codec roundtrip") =
+  property("codec round-trip") =
     forAll(genFee) { (actual: Fee) =>
       actual.asJson.as[Fee].contains(actual)
     }

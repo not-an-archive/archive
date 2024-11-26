@@ -5,7 +5,7 @@ import org.scalacheck.*
 
 import java.time.DayOfWeek
 
-object WeekProp extends Properties("tools.Week") :
+object WeekProp extends Properties("na.tools.Week") :
 
   import DayProp.*
   import Prop.*
@@ -30,7 +30,7 @@ object WeekProp extends Properties("tools.Week") :
 
   property("getHoursForDay") =
     forAll(genDay) { (day: Day) =>
-      fixture.getHoursByDate(day) ==
+      fixture.getHoursFor(day) ==
         (day.asLocalDate.getDayOfWeek match
           case MONDAY    => fixture.mon
           case TUESDAY   => fixture.tue
@@ -44,7 +44,7 @@ object WeekProp extends Properties("tools.Week") :
 
   import io.circe.syntax.*
 
-  property("codec roundtrip") =
+  property("codec round-trip") =
     forAll(genWeek) { (actual: Week) =>
       actual.asJson.as[Week].contains(actual)
     }

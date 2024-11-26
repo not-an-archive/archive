@@ -4,10 +4,10 @@ package tools
 case class Author(github: String, team: String, name: String, status: AuthorStatus, credit: Week, debit: Week, fee: Fee):
 
   def creditHoursBy(day: Day)(authorStatus: AuthorStatus): Int =
-    if status == authorStatus then credit.getHoursByDate(day) else 0
+    if status == authorStatus then credit.getHoursFor(day) else 0
 
   def debitHoursBy(day: Day)(authorStatus: AuthorStatus): Int =
-    if status == authorStatus then debit.getHoursByDate(day) else 0
+    if status == authorStatus then debit.getHoursFor(day) else 0
 
 
 object Author:

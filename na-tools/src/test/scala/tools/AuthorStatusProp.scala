@@ -3,7 +3,7 @@ package tools
 
 import org.scalacheck.*
 
-object AuthorStatusProp extends Properties("tools.AuthorStatus"):
+object AuthorStatusProp extends Properties("na.tools.AuthorStatus"):
 
   import AuthorStatus.*
   import Prop.*
@@ -18,7 +18,7 @@ object AuthorStatusProp extends Properties("tools.AuthorStatus"):
 
   import io.circe.syntax.*
 
-  property("codec roundtrip") =
+  property("codec round-trip") =
     forAll(genAuthorStatus) { (actual: AuthorStatus) =>
       actual.asJson.as[AuthorStatus].contains(actual)
     }

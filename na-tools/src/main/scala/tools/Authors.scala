@@ -12,12 +12,12 @@ object Authors:
   import io.circe.parser.*
   import io.circe.generic.semiauto.*
 
-
   val localAuthors: IO[Authors] =
     IO {
-      parse(Source.fromFile("authors.json").mkString)
-        .map(x => { val y = x.as[Authors] ; println(y) ; y.getOrElse(sys.error("invalid json format: authors.json")) } )
-        .getOrElse(sys.error("invalid format: authors.json"))
+      val file = Source.fromFile("authors.json")
+      parse(file.mkString) match
+        case Left(failure) => sys.error("invalid format: authors.json")
+        case Right(json)   => json.as[Authors].getOrElse(sys.error("invalid json format: authors.json"))
     }
 
   given Encoder[Authors] =

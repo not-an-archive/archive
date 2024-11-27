@@ -5,7 +5,7 @@ lazy val commonSettings = Seq(
   scalaVersion := ScalaLanguageVersion
 )
 
-scalacOptions := Seq(
+ThisBuild / scalacOptions := Seq(
   "-unchecked",
   "-deprecation",
   "-feature",

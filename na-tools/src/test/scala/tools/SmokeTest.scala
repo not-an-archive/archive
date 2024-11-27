@@ -9,7 +9,7 @@ import matchers.*
 
 class SmokeTest extends AsyncFlatSpec with should.Matchers with AsyncIOSpec:
 
-  "na.tools.SmokeTest" should "decode the project's local authors.json input correctly" in {
+  "na.tools.SmokeTest" should "decode the project's local authors.json file correctly" in {
     Authors
       .localAuthors
       .assertNoException

@@ -9,7 +9,7 @@ object AuthorStatusProp extends Properties("na.tools.AuthorStatus"):
   import Prop.*
 
   val genAuthorStatus: Gen[AuthorStatus] =
-    Gen.oneOf(AuthorStatus.values)
+    Gen.oneOf(AuthorStatus.values.toIndexedSeq)
 
   property("fromString") =
     forAll(genAuthorStatus) { (status: AuthorStatus) =>

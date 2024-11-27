@@ -43,8 +43,8 @@ object Hourly:
   val MaxRate = 105
 
   def fromRate(rate: Int): Either[String,Fee] =
-    if      (rate < MinRate) Left(s"min hourly rate $MinRate")
-    else if (rate > MaxRate) Left(s"max hourly rate $MaxRate")
+    if      (rate <= MinRate) Left(s"min hourly rate $MinRate")
+    else if (rate >= MaxRate) Left(s"max hourly rate $MaxRate")
     else                     Right(Hourly(rate))
 
 
@@ -56,8 +56,8 @@ object Monthly:
   val MaxRate = 20000
 
   def fromRate(rate: Int): Either[String,Fee] =
-    if      (rate < MinRate) Left(s"min monthly rate $MinRate")
-    else if (rate > MaxRate) Left(s"max monthly rate $MaxRate")
+    if      (rate <= MinRate) Left(s"min monthly rate $MinRate")
+    else if (rate >= MaxRate) Left(s"max monthly rate $MaxRate")
     else                     Right(Monthly(rate))
 
 case object Weaponized extends Fee

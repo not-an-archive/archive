@@ -10,6 +10,7 @@ object Dependencies {
   val Http4sVersion        = "0.23.28"
   val DoobieVersion        = "1.0.0-RC5"
   val CirceVersion         = "0.14.10"
+  val Github4sVersion      = "0.33.3"
   val PureConfigVersion    = "0.17.7"
   val LogbackVersion       = "1.5.10"
 
@@ -25,6 +26,7 @@ object Dependencies {
 
   val platformDependencies = Seq(
     "org.http4s"            %% "http4s-ember-server"  % Http4sVersion,
+    "org.http4s"            %% "http4s-ember-client"  % Http4sVersion,
     "org.http4s"            %% "http4s-circe"         % Http4sVersion,
     "org.http4s"            %% "http4s-dsl"           % Http4sVersion,
     "org.tpolecat"          %% "doobie-core"          % DoobieVersion,
@@ -33,6 +35,7 @@ object Dependencies {
     "org.flywaydb"          %  "flyway-core"          % FlywayVersion,
     "io.circe"              %% "circe-generic"        % CirceVersion,
     "io.circe"              %% "circe-parser"         % CirceVersion,
+    "com.47deg"             %% "github4s"             % Github4sVersion,
     "com.github.pureconfig" %% "pureconfig-core"      % PureConfigVersion,
     "ch.qos.logback"        %  "logback-classic"      % LogbackVersion,
   )

@@ -18,6 +18,11 @@ object Day:
 
   import cats.effect.*
 
+  def fromString(string: String): Day =
+    string match
+      case s"${year}-${month}-${day}T${time}" => Day(year.toInt, month.toInt, day.toInt)
+      case _                                  => sys.error(s"invalid day: $string")
+
   def fromLocalDate(date: LocalDate): Day =
     Day(date.getYear, date.getMonthValue, date.getDayOfMonth)
 

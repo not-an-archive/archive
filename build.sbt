@@ -13,6 +13,8 @@ ThisBuild / scalacOptions := Seq(
   "-language:implicitConversions"
 )
 
+ThisBuild /Compile / run / fork := true
+
 lazy val core = (project in file("na-core"))
   .settings(
     commonSettings,

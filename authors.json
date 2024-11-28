@@ -9,9 +9,9 @@
         "mon": 4,
         "tue": 4,
         "wed": 4,
-        "thu": 4,
+        "thu": 0,
         "fri": 4,
-        "sat": 0,
+        "sat": 4,
         "sun": 0
       },
       "debit": {

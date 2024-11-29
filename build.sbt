@@ -5,7 +5,7 @@ lazy val commonSettings = Seq(
   scalaVersion := ScalaLanguageVersion
 )
 
-scalacOptions := Seq(
+ThisBuild / scalacOptions := Seq(
   "-unchecked",
   "-deprecation",
   "-feature",
@@ -26,6 +26,13 @@ lazy val server = (project in file("na-server"))
     commonSettings,
     name := "na-server",
     libraryDependencies ++= platformDependencies
+  )
+
+lazy val tools = (project in file("na-tools"))
+  .settings(
+    commonSettings,
+    name := "na-tools",
+    libraryDependencies ++= platformDependencies ++ testDependencies
   )
 
 lazy val integration = (project in file("na-it"))

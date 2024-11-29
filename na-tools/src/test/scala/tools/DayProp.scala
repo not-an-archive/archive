@@ -6,7 +6,6 @@ import org.scalacheck.*
 object DayProp extends Properties("na.tools.Day"):
 
   import java.time.*
-
   import Prop.*
 
   val genDay: Gen[Day] =

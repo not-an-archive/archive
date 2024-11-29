@@ -26,5 +26,8 @@ object Day:
   def fromLocalDate(date: LocalDate): Day =
     Day(date.getYear, date.getMonthValue, date.getDayOfMonth)
 
+  def fromLocalDateTime(date: LocalDateTime): Day =
+    Day(date.getYear, date.getMonthValue, date.getDayOfMonth)
+
   def today: IO[Day] =
     IO(fromLocalDate(LocalDate.now))

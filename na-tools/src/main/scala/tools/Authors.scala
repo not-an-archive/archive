@@ -10,6 +10,7 @@ object Authors:
   import scala.io.*
   import io.circe.*
   import io.circe.parser.*
+  import io.circe.syntax.*
   import io.circe.generic.semiauto.*
 
   val localAuthors: IO[Authors] =

@@ -22,25 +22,12 @@ case class RepoFile(organisation: String, repository: String, path: String)(gith
     import java.util.Base64
     String(Base64.getMimeDecoder.decode(base64String.trim), UTF_8)
 
-  def history: IO[Map[LocalDateTime, String]] =
-    commits
-      .flatMap: commits =>
-        commits
-          .map: commit =>
-            loadFileContents(commit.sha)
-              .map: content =>
-                ZonedDateTime.parse(commit.date).toLocalDateTime -> content
-          .parSequence
-          .map: result =>
-            result.toMap
-
-  private def loadFileContents(commitSHA: String): IO[String] =
+  private def loadFileContents(commitSHA: String): IO[Option[String]] =
     github
       .repos
       .getContents(organisation, repository, path, Some(commitSHA))
       .flatMap(response => IO.fromEither(response.result))
-      .map(_.head)
-      .map(x => { val y = decodeBase64(x.content.getOrElse("<empty>")) ; println(s"loaded\n$y") ; y })
+      .map(_.head.content)
 
   private def fileSHA: IO[String] =
     github
@@ -49,8 +36,24 @@ case class RepoFile(organisation: String, repository: String, path: String)(gith
       .flatMap(response => IO.fromEither(response.result))
       .map(x => x.head.sha)
 
-  def content: IO[String] =
+  /** returns the file contents history by commit date */
+  def history: IO[Map[LocalDateTime, String]] =
+    commits
+      .flatMap: commits =>
+        commits
+          .map: commit =>
+            loadFileContents(commit.sha)
+              .map: content =>
+                ZonedDateTime.parse(commit.date).toLocalDateTime -> content.map(decodeBase64)
+          .parSequence
+          .map: result =>
+            result
+              .filterNot((d,a) => a.isEmpty)
+              .map((d,a) => d -> a.get)
+              .toMap
 
+  /** returns the latest contents */
+  def contents: IO[String] =
     for {
       sha <- fileSHA
       str <- github

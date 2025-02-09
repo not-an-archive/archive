@@ -2,7 +2,6 @@ package na
 
 import pureconfig.*
 import pureconfig.error.*
-import pureconfig.generic.derivation.default.*
 import com.comcast.ip4s.*
 
 given hostConfigReader: ConfigReader[Host] =

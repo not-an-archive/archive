@@ -10,7 +10,7 @@ object Dependencies {
   val Http4sVersion        = "0.23.28"
   val DoobieVersion        = "1.0.0-RC5"
   val CirceVersion         = "0.14.10"
-  val PureConfigVersion    = "0.17.7"
+  val PureConfigVersion    = "0.17.8"
   val LogbackVersion       = "1.5.10"
 
   /** Test dependencies */

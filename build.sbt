@@ -13,33 +13,33 @@ ThisBuild / scalacOptions := Seq(
   "-language:implicitConversions"
 )
 
-lazy val core = (project in file("na-core"))
+lazy val core = (project in file("naa-core"))
   .settings(
     commonSettings,
-    name := "na-core",
+    name := "naa-core",
     libraryDependencies ++= platformDependencies ++ testDependencies
   )
 
-lazy val server = (project in file("na-server"))
+lazy val server = (project in file("naa-server"))
   .dependsOn(core)
   .settings(
     commonSettings,
-    name := "na-server",
+    name := "naa-server",
     libraryDependencies ++= platformDependencies
   )
 
-lazy val tools = (project in file("na-tools"))
+lazy val tools = (project in file("naa-tools"))
   .settings(
     commonSettings,
-    name := "na-tools",
+    name := "naa-tools",
     libraryDependencies ++= platformDependencies ++ testDependencies
   )
 
-lazy val integration = (project in file("na-it"))
+lazy val integration = (project in file("naa-it"))
   .dependsOn(server)
   .settings(
     commonSettings,
-    name := "na-it",
+    name := "naa-it",
     publish / skip := true,
     libraryDependencies ++= platformDependencies ++ testDependencies
   )

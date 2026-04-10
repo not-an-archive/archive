@@ -9,9 +9,6 @@ case class PID(msb: Long, lsb: Long):
 
   import PID.*
 
-//  assert(variant == Variant.LeachSalz, "No archive compliant uuid variant: LeachSalz)")
-//  assert(version == Version.CustomFormatBased, "no archive compliant uuid version: CustomFormatBased")
-//
   /**
    * The variant field determines the overall layout of the UUID.  That is, the interpretation of all other bits in the
    * UUID depends on the setting of the bits in the variant field.  As such, it could more accurately be called a type

@@ -1,7 +1,7 @@
 import Dependencies._
 
 ThisBuild / version        := "0.1.0"
-ThisBuild / scalaVersion   := "3.8.3"
+ThisBuild / scalaVersion   := "3.8.4"
 ThisBuild / scalacOptions ++= Seq(
   "-encoding", "utf8",
   "-feature",

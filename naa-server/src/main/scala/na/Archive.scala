@@ -4,9 +4,9 @@ import scala.concurrent.*
 
 import cats.effect.*
 
-import doobie.*
-import doobie.util.log.LogEvent
-import doobie.hikari.HikariTransactor
+import org.typelevel.doobie.*
+import org.typelevel.doobie.util.log.LogEvent
+import org.typelevel.doobie.hikari.HikariTransactor
 
 import org.flywaydb.core.*
 

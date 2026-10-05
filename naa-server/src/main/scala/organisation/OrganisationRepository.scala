@@ -3,9 +3,9 @@ package organisation
 import cats.implicits.*
 import cats.effect.*
 import fs2.*
-import doobie.Meta
-import doobie.implicits.*
-import doobie.util.transactor.*
+import org.typelevel.doobie.Meta
+import org.typelevel.doobie.implicits.*
+import org.typelevel.doobie.util.transactor.*
 
 import naa.*
 import core.*
@@ -98,4 +98,4 @@ object OrganisationRepository:
         expectUpdate(Some(pid))(rowCount)
 
   given uuidMeta: Meta[PID] =
-    doobie.h2.implicits.UuidType.imap(_.toPID)(_.toUUID)
+    org.typelevel.doobie.h2.implicits.UuidType.imap(_.toPID)(_.toUUID)

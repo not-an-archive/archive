@@ -4,8 +4,8 @@ import cats.data.*
 import cats.effect.*
 import cats.implicits.*
 
-import doobie.hikari.HikariTransactor
-import doobie.util.*
+import org.typelevel.doobie.hikari.HikariTransactor
+import org.typelevel.doobie.util.*
 
 import fs2.*
 

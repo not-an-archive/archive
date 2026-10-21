@@ -1,7 +1,7 @@
-import Dependencies._
+import Dependencies.*
 
 ThisBuild / version        := "0.1.0"
-ThisBuild / scalaVersion   := "3.9.0"
+ThisBuild / scalaVersion   := "3.10.0"
 ThisBuild / scalacOptions ++= Seq(
   "-encoding", "utf8",
   "-feature",
@@ -10,6 +10,14 @@ ThisBuild / scalacOptions ++= Seq(
   "-unchecked",
   "-Werror",
   "-deprecation"
+)
+
+ThisBuild / Compile / run / javaOptions ++= Seq(
+  "-Xmx4G",
+  "-Xss1G",
+  "-XX:+UseG1GC",
+  "--sun-misc-unsafe-memory-access=allow",
+  "--enable-native-access=ALL-UNNAMED"
 )
 
 lazy val core = (project in file("naa-core"))
